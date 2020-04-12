@@ -9,13 +9,13 @@ The host-side is based on a modified version of DOSBox. It emulates the IMSB008 
 
 Software:
   - DOSBox with USB-Bridge, Windows 10, Visual Studio 2019: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Visual%20Studio)
-  - USB-Interface with Power Management, Current Sensor and HP-Display, based on NXP's LPC54114, MCUXPresso IDE v11: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/MCUXpresso)
+  - USB-Interface, based on NXP's LPC54114, MCUXPresso IDE v11: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/MCUXpresso)
   - CPLD for the fancy Link-Leds, Lattice M4A5-64/32-10VC, ispLever Classic: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/ispLEVER%20Classic/linkled)
   
 Hardware:
   - Module for 4 TRAM's, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/TB-4)
   - Backpanel with 7 slots, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/BB-7)
-  - USB Interface, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/UB-1)
+  - USB Interface with Power Management, Current Sensor and HP-Display, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/UB-1)
   - SIZE-1 TRAM with 128kB SRAM, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/TM-2)    
 
 ![Transputerbox Back](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_back.jpg)
