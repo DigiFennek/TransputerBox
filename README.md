@@ -9,8 +9,8 @@ The host-side is based on a modified version of DOSBox. It emulates the IMSB008 
 
 Software:
   - DOSBox with USB-Bridge, Windows 10, Visual Studio 2019: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Visual%20Studio)
-  - USB-Interface NXP LPC54114, MCUXPresso IDE v11: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/MCUXpresso)
-  - CPLD for the fancy Link-Leds, ispLever Classic: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/ispLEVER%20Classic/linkled)
+  - USB-Interface with Power Management, Current Sensor and HP-Display, based on NXP's LPC54114, MCUXPresso IDE v11: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/MCUXpresso)
+  - CPLD for the fancy Link-Leds, Lattice M4A5-64/32-10VC, ispLever Classic: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/ispLEVER%20Classic/linkled)
   
 Hardware:
   - Module for 4 TRAM's, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/TB-4)
