@@ -1,0 +1,40 @@
+#include "c012.h"
+#include "board.h"
+
+void c012_reset(void)
+{
+	GPIO->B[C012_PORT][C012_PIN_NOTCS] = 1;
+	GPIO->B[C012_PORT][C012_PIN_RESET] = 1;
+
+	for (int i = 0; i < 10000; i++) {
+		__NOP();
+	}
+
+	GPIO->B[C012_PORT][C012_PIN_RESET] = 0;
+
+	for (int i = 0; i < 100000; i++) {
+		__NOP();
+	}
+
+	// enable OUTPUTINT
+	GPIO->DIRSET[C012_PORT] = C012_DATA;
+	GPIO->MASK[C012_PORT] = ~C012_MASK;
+	GPIO->MPIN[C012_PORT] = C012_R2_W | (0x02 << C012_D07_SHIFT);
+	GPIO->B[C012_PORT][C012_PIN_NOTCS] = 0;
+	GPIO->B[C012_PORT][C012_PIN_NOTCS] = 1;
+
+	// enable INPUTINT
+	GPIO->DIRSET[C012_PORT] = C012_DATA;
+	GPIO->MASK[C012_PORT] = ~C012_MASK;
+	GPIO->MPIN[C012_PORT] = C012_R3_W | (0x02 << C012_D07_SHIFT);
+	GPIO->B[C012_PORT][C012_PIN_NOTCS] = 0;
+	GPIO->B[C012_PORT][C012_PIN_NOTCS] = 1;
+}
+
+void c012_power_off(void)
+{
+	GPIO->MASK[C012_PORT] = ~C012_MASK;
+	GPIO->B[C012_PORT][C012_PIN_NOTCS] = 0;
+	GPIO->B[C012_PORT][C012_PIN_RESET] = 0;
+	GPIO->MPIN[C012_PORT] = 0;
+}

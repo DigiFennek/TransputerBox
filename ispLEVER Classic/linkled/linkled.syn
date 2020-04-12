@@ -1,0 +1,11 @@
+JDF B
+// Created by Version 2.0 
+PROJECT linkled
+DESIGN linkled Normal
+DEVKIT M4A5-64/32-10VC
+ENTRY Pure VHDL
+MODULE linkled.vhd
+MODSTYLE linkled Normal
+SYNTHESIS_TOOL Synplify
+SIMULATOR_TOOL ActiveHDL
+TOPMODULE linkled
