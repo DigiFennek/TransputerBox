@@ -18,6 +18,15 @@ Hardware:
   - USB Interface with Power Management, Current Sensor and HP-Display, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/UB-1)
   - SIZE-1 TRAM with 128kB SRAM, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/TM-2)    
 
-![Transputerbox Back](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_back.jpg)
+![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_back.jpg)
 
-![TransputerBox Card](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_card.jpg)
+![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_card.jpg)
+
+![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_occam.jpg)
+
+![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_mtest.jpg)
+
+![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_mandelbrot.jpg)
+
+![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_raytracer.jpg)
+
