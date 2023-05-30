@@ -37,6 +37,7 @@
 #include "peripherals.h"
 #include "libusbdev.h"
 #include "power.h"
+#include "button.h"
 #include "display.h"
 #include "transputer.h"
 #include "cooling.h"
@@ -45,9 +46,6 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
-/* Address of RAM, where the image for core1 should be copied */
-#define CORE1_BOOT_ADDRESS (void *)0x20010000
 
 #define CHECK_TIMER(timer) {if(timer) timer--;}
 
@@ -78,9 +76,11 @@ void MRT_1_IRQHANDLER(void)
 	{
 		MRT_ClearStatusFlags(MRT_1_PERIPHERAL, MRT_1_CHANNEL_1, kMRT_TimerInterruptFlag);
 		CHECK_TIMER(power.timer_10ms);
-		CHECK_TIMER(transputer.stop_timer_10ms);
+		CHECK_TIMER(button.timer_10ms);
 		CHECK_TIMER(transputer.upload_led_10ms);
 		CHECK_TIMER(transputer.download_led_10ms);
+		CHECK_TIMER(transputer.reset_led_10ms);
+		CHECK_TIMER(transputer.analyse_led_10ms);
 	}
 }
 
@@ -100,28 +100,28 @@ int main(void)
 
     BOARD_InitPins();
     BOARD_InitBootPeripherals();
-    BOARD_BootClockFROHF96M();
+    BOARD_InitBootClocks();
     BOARD_InitDebugConsole();
 
-	/* Init USB subsystem and LibUSBDevice */
-	libusbdev_init();
-
-    /* Boot Secondary core application */
-	MCMGR_StartCore(kMCMGR_Core1, CORE1_BOOT_ADDRESS, (uint32_t)&c012, kMCMGR_Start_Synchronous);
-
 	power_init();
+	button_init();
     display_init();
 	transputer_init();
     cooling_init();
 
-    while (1U)
+	/* Init USB subsystem and LibUSBDevice */
+	libusbdev_init();
+
+	GPIO_PinWrite(BOARD_DEBUG_GPIO, BOARD_DEBUG_PORT, BOARD_DEBUG_PIN, true);
+	GPIO_PinWrite(BOARD_DEBUG_GPIO, BOARD_DEBUG_PORT, BOARD_DEBUG_PIN, false);
+
+	while (1U)
     {
 		power_task();
+		button_task();
 		display_task();
 		transputer_task();
 	    cooling_task();
-
-		GPIO_PortToggle(BOARD_DEBUG_GPIO, BOARD_DEBUG_PORT, 1 << BOARD_DEBUG_PIN);
 
     	/* Sleep until next IRQ happens */
 		__WFI();

@@ -18,10 +18,12 @@
 
 #include "iusb008.h"
 #include "fifo.h"
+#include "usb.h"
 #include <pic.h>
 #include <callback.h>
 
-static Bitu timeout = 2000;
+// timout 10th of a second
+static Bitu timeout = 100;
 
 // Source: INMOS\D7205\SOURCE\ISERVER.C
 #define B008_RESET      (0)
@@ -51,28 +53,38 @@ virtual_IUSB008::virtual_IUSB008(fifo_t* rx_fifo, fifo_t* tx_fifo, driverCallbac
 }
 
 bool virtual_IUSB008::Read(Bit8u* data, Bit16u* size) {
+	if (!usbIsConnected()) {
+		DOS_SetError(ER_LINK_BAD);
+		*size = 0;
+		return false;
+	}
 	double end_time = PIC_FullIndex() + timeout;
 	while (fifo_count(rx_fifo) < *size) {
-		if (PIC_FullIndex() > end_time) {
-			DOS_SetError(ER_LINK_BAD);
-			return false;
+		if (timeout && PIC_FullIndex() > end_time) {
+			*size = 0;
+			return true;
 		} 
 		CALLBACK_Idle();
 	}
-	*size = fifo_pop(rx_fifo, (uint8_t*)data, *size);
+	*size = fifo_deq(rx_fifo, (uint8_t*)data, *size);
 	return true;
 }
 
 bool virtual_IUSB008::Write(Bit8u* data, Bit16u* size) {
+	if (!usbIsConnected()) {
+		DOS_SetError(ER_LINK_BAD);
+		*size = 0;
+		return false;
+	}
 	double end_time = PIC_FullIndex() + timeout;
 	while (fifo_space(tx_fifo) < *size) {
-		if (PIC_FullIndex() > end_time) {
-			DOS_SetError(ER_LINK_BAD);
-			return false;
+		if (timeout && PIC_FullIndex() > end_time) {
+			*size = 0;
+			return true;
 		}
 		CALLBACK_Idle();
 	}
-	*size = fifo_push(tx_fifo, (uint8_t*)data, *size);
+	*size = fifo_enq(tx_fifo, (uint8_t*)data, *size);
 	driverCallback('W');
 	return true;
 }
@@ -110,7 +122,7 @@ bool virtual_IUSB008::WriteToControlChannel(PhysPt bufptr, Bit16u size, Bit16u* 
 			driverCallback('A');
 			break;
 		case B008_TIMEOUT:
-			timeout = io_val * 1000;
+			timeout = io_val * 100;
 			break;
 		}
 		*retcode = size;

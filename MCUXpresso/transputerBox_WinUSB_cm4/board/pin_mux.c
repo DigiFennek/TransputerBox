@@ -7,15 +7,15 @@
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
-product: Pins v6.0
+product: Pins v8.0
 processor: LPC54114J256
 package_id: LPC54114J256BD64
 mcu_data: ksdk2_0
-processor_version: 6.0.2
+processor_version: 8.0.2
 board: LPCXpresso54114
 pin_labels:
 - {pin_num: '3', pin_signal: PIO0_25/FC4_RTS_SCL_SSEL1/FC6_CTS_SDA_SSEL0/CTIMER0_CAP2/CTIMER1_CAP1, label: C012 Reset, identifier: C012_RESET}
-- {pin_num: '2', pin_signal: PIO0_24/FC1_CTS_SDA_SSEL0/CTIMER0_CAP1/CTIMER0_MAT0, label: C012 Input Interrupt, identifier: C012_INPUT_INT}
+- {pin_num: '2', pin_signal: PIO0_24/FC1_CTS_SDA_SSEL0/CTIMER0_CAP1/CTIMER0_MAT0, label: C012 Input Int, identifier: C012_INPUT_INT}
 - {pin_num: '1', pin_signal: PIO0_23/FC1_RTS_SCL_SSEL1/CTIMER0_CAP0/UTICK_CAP1, label: C012 Output Int, identifier: C012_OUTPUT_INT}
 - {pin_num: '4', pin_signal: PIO0_26/FC4_CTS_SDA_SSEL0/CTIMER0_CAP3}
 - {pin_num: '7', pin_signal: PIO1_16/PDM0_DATA/CTIMER0_MAT0/CTIMER0_CAP0/FC7_RTS_SCL_SSEL1}
@@ -125,10 +125,11 @@ BOARD_InitPins:
   - {pin_num: '31', peripheral: FLEXCOMM0, signal: RXD_SDA_MOSI, pin_signal: PIO0_0/FC0_RXD_SDA_MOSI/FC3_CTS_SDA_SSEL0/CTIMER0_CAP0/SCT0_OUT3}
   - {pin_num: '32', peripheral: FLEXCOMM0, signal: TXD_SCL_MISO, pin_signal: PIO0_1/FC0_TXD_SCL_MISO/FC3_RTS_SCL_SSEL1/CTIMER0_CAP1/SCT0_OUT1}
   - {pin_num: '63', peripheral: GPIO, signal: 'PIO0, 22', pin_signal: PIO0_22/CLKIN/FC0_RXD_SDA_MOSI/CTIMER3_MAT3, direction: OUTPUT, mode: inactive, slew_rate: fast}
-  - {pin_num: '1', peripheral: GPIO, signal: 'PIO0, 23', pin_signal: PIO0_23/FC1_RTS_SCL_SSEL1/CTIMER0_CAP0/UTICK_CAP1, direction: INPUT, i2c_drive: no_init, i2c_filter: no_init}
-  - {pin_num: '2', peripheral: GPIO, signal: 'PIO0, 24', pin_signal: PIO0_24/FC1_CTS_SDA_SSEL0/CTIMER0_CAP1/CTIMER0_MAT0, direction: INPUT, i2c_drive: no_init, i2c_filter: no_init}
+  - {pin_num: '1', peripheral: GPIO, signal: 'PIO0, 23', pin_signal: PIO0_23/FC1_RTS_SCL_SSEL1/CTIMER0_CAP0/UTICK_CAP1, direction: INPUT, i2c_slew: gpio, i2c_drive: no_init,
+    i2c_filter: disabled}
+  - {pin_num: '2', peripheral: GPIO, signal: 'PIO0, 24', pin_signal: PIO0_24/FC1_CTS_SDA_SSEL0/CTIMER0_CAP1/CTIMER0_MAT0, direction: INPUT, i2c_drive: no_init, i2c_filter: disabled}
   - {pin_num: '3', peripheral: GPIO, signal: 'PIO0, 25', pin_signal: PIO0_25/FC4_RTS_SCL_SSEL1/FC6_CTS_SDA_SSEL0/CTIMER0_CAP2/CTIMER1_CAP1, direction: OUTPUT, gpio_init_state: 'false',
-    i2c_drive: no_init, i2c_filter: no_init}
+    i2c_drive: no_init, i2c_filter: disabled}
   - {pin_num: '14', peripheral: PINT, signal: 'PINT, 0', pin_signal: PIO1_0/PDM0_DATA/FC2_RTS_SCL_SSEL1/CTIMER3_MAT1/CTIMER0_CAP0/ADC0_3, identifier: ''}
   - {pin_num: '15', peripheral: PINT, signal: 'PINT, 1', pin_signal: PIO1_1/SWO/SCT0_OUT4/FC5_SSEL2/FC4_TXD_SCL_MISO/ADC0_4, identifier: ''}
   - {pin_num: '61', peripheral: GPIO, signal: 'PIO0, 21', pin_signal: PIO0_21/CLKOUT/FC0_TXD_SCL_MISO/CTIMER3_MAT0, identifier: DEBUG, direction: OUTPUT, gpio_init_state: 'false',
@@ -647,21 +648,31 @@ void BOARD_InitPins(void)
           * Refer to the appropriate specific device data sheet for details. */
          | IOCON_PIO_SLEW(PIO022_SLEW_FAST));
 
-    IOCON->PIO[0][23] = ((IOCON->PIO[0][23] &
-                          /* Mask bits to zero which are setting */
-                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+    IOCON->PIO[0][23] =
+        ((IOCON->PIO[0][23] &
+          /* Mask bits to zero which are setting */
+          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_I2CSLEW_MASK | IOCON_PIO_DIGIMODE_MASK | IOCON_PIO_I2CFILTER_MASK)))
 
-                         /* Selects pin function.
-                          * : PORT023 (pin 1) is configured as PIO0_23. */
-                         | IOCON_PIO_FUNC(PIO023_FUNC_ALT0)
+         /* Selects pin function.
+          * : PORT023 (pin 1) is configured as PIO0_23. */
+         | IOCON_PIO_FUNC(PIO023_FUNC_ALT0)
 
-                         /* Select Analog/Digital mode.
-                          * : Digital mode. */
-                         | IOCON_PIO_DIGIMODE(PIO023_DIGIMODE_DIGITAL));
+         /* Controls slew rate of I2C pad.
+          * : GPIO mode. */
+         | IOCON_PIO_I2CSLEW(PIO023_I2CSLEW_GPIO_MODE)
+
+         /* Select Analog/Digital mode.
+          * : Digital mode. */
+         | IOCON_PIO_DIGIMODE(PIO023_DIGIMODE_DIGITAL)
+
+         /* Configures I2C features for standard mode, fast mode, and Fast Mode Plus operation.
+          * : Disabled.
+          * I2C 50 ns glitch filter disabled. */
+         | IOCON_PIO_I2CFILTER(PIO023_I2CFILTER_DISABLED));
 
     IOCON->PIO[0][24] = ((IOCON->PIO[0][24] &
                           /* Mask bits to zero which are setting */
-                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK | IOCON_PIO_I2CFILTER_MASK)))
 
                          /* Selects pin function.
                           * : PORT024 (pin 2) is configured as PIO0_24. */
@@ -669,11 +680,16 @@ void BOARD_InitPins(void)
 
                          /* Select Analog/Digital mode.
                           * : Digital mode. */
-                         | IOCON_PIO_DIGIMODE(PIO024_DIGIMODE_DIGITAL));
+                         | IOCON_PIO_DIGIMODE(PIO024_DIGIMODE_DIGITAL)
+
+                         /* Configures I2C features for standard mode, fast mode, and Fast Mode Plus operation.
+                          * : Disabled.
+                          * I2C 50 ns glitch filter disabled. */
+                         | IOCON_PIO_I2CFILTER(PIO024_I2CFILTER_DISABLED));
 
     IOCON->PIO[0][25] = ((IOCON->PIO[0][25] &
                           /* Mask bits to zero which are setting */
-                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK | IOCON_PIO_I2CFILTER_MASK)))
 
                          /* Selects pin function.
                           * : PORT025 (pin 3) is configured as PIO0_25. */
@@ -681,7 +697,12 @@ void BOARD_InitPins(void)
 
                          /* Select Analog/Digital mode.
                           * : Digital mode. */
-                         | IOCON_PIO_DIGIMODE(PIO025_DIGIMODE_DIGITAL));
+                         | IOCON_PIO_DIGIMODE(PIO025_DIGIMODE_DIGITAL)
+
+                         /* Configures I2C features for standard mode, fast mode, and Fast Mode Plus operation.
+                          * : Disabled.
+                          * I2C 50 ns glitch filter disabled. */
+                         | IOCON_PIO_I2CFILTER(PIO025_I2CFILTER_DISABLED));
 
     IOCON->PIO[0][3] = ((IOCON->PIO[0][3] &
                          /* Mask bits to zero which are setting */
@@ -972,39 +993,39 @@ void BOARD_InitPins_Core0(void)
     /* Enables the clock for the IOCON block. 0 = Disable; 1 = Enable.: 0x01u */
     CLOCK_EnableClock(kCLOCK_Iocon);
 
-    const uint32_t port0_pin0_config = (/* Pin is configured as FC0_RXD_SDA_MOSI */
-                                        IOCON_PIO_FUNC1 |
-                                        /* No addition pin function */
-                                        IOCON_PIO_MODE_INACT |
-                                        /* Input function is not inverted */
-                                        IOCON_PIO_INV_DI |
-                                        /* Enables digital function */
-                                        IOCON_PIO_DIGITAL_EN |
-                                        /* Input filter disabled */
-                                        IOCON_PIO_INPFILT_OFF |
-                                        /* Standard mode, output slew rate control is enabled */
-                                        IOCON_PIO_SLEW_STANDARD |
-                                        /* Open drain is disabled */
-                                        IOCON_PIO_OPENDRAIN_DI);
+    const uint32_t DEBUG_UART_RX = (/* Pin is configured as FC0_RXD_SDA_MOSI */
+                                    IOCON_PIO_FUNC1 |
+                                    /* No addition pin function */
+                                    IOCON_PIO_MODE_INACT |
+                                    /* Input function is not inverted */
+                                    IOCON_PIO_INV_DI |
+                                    /* Enables digital function */
+                                    IOCON_PIO_DIGITAL_EN |
+                                    /* Input filter disabled */
+                                    IOCON_PIO_INPFILT_OFF |
+                                    /* Standard mode, output slew rate control is enabled */
+                                    IOCON_PIO_SLEW_STANDARD |
+                                    /* Open drain is disabled */
+                                    IOCON_PIO_OPENDRAIN_DI);
     /* PORT0 PIN0 (coords: 31) is configured as FC0_RXD_SDA_MOSI */
-    IOCON_PinMuxSet(IOCON, 0U, 0U, port0_pin0_config);
+    IOCON_PinMuxSet(IOCON, BOARD_INITPINS_CORE0_DEBUG_UART_RX_PORT, BOARD_INITPINS_CORE0_DEBUG_UART_RX_PIN, DEBUG_UART_RX);
 
-    const uint32_t port0_pin1_config = (/* Pin is configured as FC0_TXD_SCL_MISO */
-                                        IOCON_PIO_FUNC1 |
-                                        /* No addition pin function */
-                                        IOCON_PIO_MODE_INACT |
-                                        /* Input function is not inverted */
-                                        IOCON_PIO_INV_DI |
-                                        /* Enables digital function */
-                                        IOCON_PIO_DIGITAL_EN |
-                                        /* Input filter disabled */
-                                        IOCON_PIO_INPFILT_OFF |
-                                        /* Standard mode, output slew rate control is enabled */
-                                        IOCON_PIO_SLEW_STANDARD |
-                                        /* Open drain is disabled */
-                                        IOCON_PIO_OPENDRAIN_DI);
+    const uint32_t DEBUG_UART_TX = (/* Pin is configured as FC0_TXD_SCL_MISO */
+                                    IOCON_PIO_FUNC1 |
+                                    /* No addition pin function */
+                                    IOCON_PIO_MODE_INACT |
+                                    /* Input function is not inverted */
+                                    IOCON_PIO_INV_DI |
+                                    /* Enables digital function */
+                                    IOCON_PIO_DIGITAL_EN |
+                                    /* Input filter disabled */
+                                    IOCON_PIO_INPFILT_OFF |
+                                    /* Standard mode, output slew rate control is enabled */
+                                    IOCON_PIO_SLEW_STANDARD |
+                                    /* Open drain is disabled */
+                                    IOCON_PIO_OPENDRAIN_DI);
     /* PORT0 PIN1 (coords: 32) is configured as FC0_TXD_SCL_MISO */
-    IOCON_PinMuxSet(IOCON, 0U, 1U, port0_pin1_config);
+    IOCON_PinMuxSet(IOCON, BOARD_INITPINS_CORE0_DEBUG_UART_TX_PORT, BOARD_INITPINS_CORE0_DEBUG_UART_TX_PIN, DEBUG_UART_TX);
 }
 /***********************************************************************************************************************
  * EOF

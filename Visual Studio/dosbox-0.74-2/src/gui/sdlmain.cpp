@@ -284,24 +284,30 @@ extern bool CPU_CycleAutoAdjust;
 bool startup_state_numlock=false;
 bool startup_state_capslock=false;
 
+bool usbIsConnected();
+
 void GFX_SetTitle(Bit32s cycles,Bits frameskip,bool paused){
 	char title[200]={0};
 	static Bit32s internal_cycles=0;
 	static Bits internal_frameskip=0;
 	if(cycles != -1) internal_cycles = cycles;
 	if(frameskip != -1) internal_frameskip = frameskip;
-/*
-	if(CPU_CycleAutoAdjust) {
-		sprintf(title,"DOSBox %s, Cpu speed: max %3d%% cycles, Frameskip %2d, Program: %8s",VERSION,internal_cycles,internal_frameskip,RunningProgram);
-	} else {
-		sprintf(title,"DOSBox %s, Cpu speed: %8d cycles, Frameskip %2d, Program: %8s",VERSION,internal_cycles,internal_frameskip,RunningProgram);
+
+#if C_TRANSPUTER
+	if (usbIsConnected()) {
+		sprintf(title, "TransputerBox - Connected - %s", RunningProgram);
 	}
-*/
-	if(CPU_CycleAutoAdjust) {
-		sprintf(title,"TransputerBox (DOSBox %s), Cpu speed: max %d%% cycles, Program: %s",VERSION,internal_cycles,RunningProgram);
-	} else {
-		sprintf(title,"TransputerBox (DOSBox %s), Cpu speed: %d cycles, Program: %s",VERSION,internal_cycles,RunningProgram);
+	else {
+		sprintf(title, "TransputerBox - Not Connected - %s", RunningProgram);
 	}
+#else
+	if (CPU_CycleAutoAdjust) {
+		sprintf(title, "DOSBox %s, Cpu speed: max %3d%% cycles, Frameskip %2d, Program: %8s", VERSION, internal_cycles, internal_frameskip, RunningProgram);
+	}
+	else {
+		sprintf(title, "DOSBox %s, Cpu speed: %8d cycles, Frameskip %2d, Program: %8s", VERSION, internal_cycles, internal_frameskip, RunningProgram);
+	}
+#endif
 
 	if(paused) strcat(title," PAUSED");
 	SDL_WM_SetCaption(title,VERSION);

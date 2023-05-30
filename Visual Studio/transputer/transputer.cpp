@@ -17,6 +17,7 @@
  */
 
 #include "dosbox.h"
+#include "shell.h"
 #include "setup.h"
 #include "fifo.h"
 #include "usb.h"
@@ -34,6 +35,7 @@ static bool error_flag = false;
 static bool stop_flag = false;
 
 static uint32_t usb_intr_status;
+static uint32_t link_speed;
 
 enum
 {
@@ -81,7 +83,7 @@ static DWORD usbCallback(UCHAR PipeID, DWORD byte_count, UCHAR* buffer)
 {
 	switch (PipeID) {
 	case PIPE_ID_BULK_IN:
-		if (fifo_push(&rx_fifo, (uint8_t*)buffer, byte_count) < byte_count) {
+		if (fifo_enq(&rx_fifo, (uint8_t*)buffer, byte_count) < byte_count) {
 			LOG_MSG("TRANSPUTER: %s: input not ready!", __func__);
 		}
 		break;
@@ -90,7 +92,7 @@ static DWORD usbCallback(UCHAR PipeID, DWORD byte_count, UCHAR* buffer)
 		break;
 	case PIPE_ID_BULK_OUT:
 		if (!stop_flag) {
-			byte_count = fifo_pop(&tx_fifo, buffer, byte_count);
+			byte_count = fifo_deq(&tx_fifo, buffer, byte_count);
 		}
 		else {
 			byte_count = 0;
@@ -111,12 +113,23 @@ static DWORD usbCallback(UCHAR PipeID, DWORD byte_count, UCHAR* buffer)
 
 static void resetTransputer(bool analyse)
 {
+	std::string Value;
+	DOS_Shell Shell;
+	if (Shell.GetEnvStr("LINKSPEED", Value)) {
+		if (Value == "LINKSPEED=10") {
+			link_speed = usb_intr_speed_10Mb;
+		}
+		if (Value == "LINKSPEED=20") {
+			link_speed = usb_intr_speed_20Mb;
+		}
+	}
+
 	if (analyse) {
-		usb_intr_status = usb_intr_analyse;
+		usb_intr_status = usb_intr_analyse | link_speed;
 		usbSignalPipe(PIPE_ID_INTR_OUT);
 	}
 	else {
-		usb_intr_status = usb_intr_reset;
+		usb_intr_status = usb_intr_reset | link_speed;
 		usbSignalPipe(PIPE_ID_INTR_OUT);
 	}
 
@@ -174,7 +187,7 @@ public:
 	}
 };
 
-static Transputer* transputer;
+static Transputer* transputer = NULL;
 
 void TRANSPUTER_Destroy(Section* sec) {
 	delete transputer;

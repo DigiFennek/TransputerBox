@@ -52,6 +52,9 @@
 /* Define to 1 if you want serial passthrough support (Win32 only). */
 #define C_DIRECTSERIAL 1
 
+/* Define to 1 if you have a transputerBox. */
+#define C_TRANSPUTER 1
+
 #define GCC_ATTRIBUTE(x) /* attribute not supported */
 #define GCC_UNLIKELY(x) (x)
 #define GCC_LIKELY(x) (x)
@@ -75,4 +78,3 @@ typedef unsigned __int64	Bit64u;
 typedef   signed __int64	Bit64s;
 typedef unsigned int		Bitu;
 typedef signed int			Bits;
-

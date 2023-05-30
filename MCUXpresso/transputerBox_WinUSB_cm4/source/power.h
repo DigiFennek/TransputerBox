@@ -11,7 +11,6 @@ typedef enum
 	power_state_check_voltage,
 	power_state_switch_on,
 	power_state_power_up,
-	power_state_reset,
 	power_state_ready
 } power_state_t;
 
@@ -29,12 +28,15 @@ typedef struct
 	uint8_t timer_10ms;
 	power_state_t state;
 	power_error_t error;
-	uint16_t voltage;
-	uint16_t current;
+	uint16_t voltage_mV;
+	uint16_t current_mA;
+	uint16_t wattage_mW;
 } power_t;
 
 extern power_t power;
 
+void power_on(void);
+void power_off(void);
 void power_emergency_off(power_error_t error);
 void power_init(void);
 void power_task(void);

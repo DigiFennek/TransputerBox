@@ -6,5 +6,6 @@
 void ina260_init(void);
 uint16_t ina260_read_current(void);
 uint16_t ina260_read_voltage(void);
+uint16_t ina260_read_wattage(void);
 
 #endif

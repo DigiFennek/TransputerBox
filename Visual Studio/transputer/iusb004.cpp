@@ -63,7 +63,7 @@ static Bitu read_error(Bitu port, Bitu iolen)
 static Bitu c012_read_data(Bitu port, Bitu iolen)
 {
 	uint8_t data = 0;
-	if (fifo_pop(rx_fifo, &data, 1) < 1) {
+	if (fifo_deq(rx_fifo, &data, 1) < 1) {
 		LOG_MSG("IUSB004: %s: rx buffer empty!", __func__);
 	}
 	return data;
@@ -72,14 +72,19 @@ static Bitu c012_read_data(Bitu port, Bitu iolen)
 static void c012_write_data(Bitu port, Bitu val, Bitu iolen)
 {
 	uint8_t data = val;
-	if (fifo_push(tx_fifo, &data, 1) < 1) {
+	if (fifo_enq(tx_fifo, &data, 1) < 1) {
 		LOG_MSG("IUSB004: %s: tx buffer full!", __func__);
 	}
-	driverCallback('W');
+	if (fifo_count(tx_fifo) >= 64) {
+		driverCallback('W');
+	}
 }
 
 static Bitu c012_read_input_status(Bitu port, Bitu iolen)
 {
+	if (fifo_count(tx_fifo) > 0) {
+		driverCallback('W');
+	}
 	if (fifo_count(rx_fifo) > 0) {
 		return 1;
 	}

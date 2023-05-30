@@ -12,12 +12,12 @@
 #include "fsl_common.h"
 #include "fsl_ctimer.h"
 #include "fsl_clock.h"
+#include "fsl_gpio.h"
 #include "fsl_i2c.h"
+#include "fsl_mrt.h"
+#include "fsl_pint.h"
 #include "fsl_reset.h"
 #include "fsl_usart.h"
-#include "fsl_mrt.h"
-#include "fsl_gpio.h"
-#include "fsl_pint.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -28,32 +28,30 @@ extern "C" {
  **********************************************************************************************************************/
 /* Definitions for BOARD_InitPeripherals functional group */
 /* Definition of peripheral ID */
+#define CTIMER_0_PERIPHERAL CTIMER0
+/* Timer tick frequency in Hz (input frequency of the timer) */
+#define CTIMER_0_TICK_FREQ 96000000UL
+/* Timer tick period in ns (input period of the timer) */
+#define CTIMER_0_TICK_PERIOD 10UL
+/* Definition of peripheral ID */
 #define CTIMER_1_PERIPHERAL CTIMER1
 /* Timer tick frequency in Hz (input frequency of the timer) */
 #define CTIMER_1_TICK_FREQ 375000UL
 /* Timer tick period in ns (input period of the timer) */
 #define CTIMER_1_TICK_PERIOD 2667UL
 /* Definition of PWM period */
-#define CTIMER_1_PWM_PERIOD 94
+#define CTIMER_1_PWM_PERIOD 93
 /* Definition of channel 0 ID */
 #define CTIMER_1_PWM_0_CHANNEL kCTIMER_Match_0
 /* Definition of channel 0 duty */
 #define CTIMER_1_PWM_0_DUTY 56
+/* Definition of peripheral ID */
+#define GPIO_1_GPIO GPIO
 /* BOARD_InitPeripherals defines for FLEXCOMM7 */
 /* Definition of peripheral ID */
 #define I2C_7_PERIPHERAL ((I2C_Type *)FLEXCOMM7)
 /* Definition of the clock source frequency */
 #define I2C_7_CLOCK_SOURCE 12000000UL
-/* Definition of peripheral ID */
-#define USART_0_PERIPHERAL ((USART_Type *)FLEXCOMM0)
-/* Definition of the clock source frequency */
-#define USART_0_CLOCK_SOURCE 12000000UL
-/* Definition of peripheral ID */
-#define CTIMER_0_PERIPHERAL CTIMER0
-/* Timer tick frequency in Hz (input frequency of the timer) */
-#define CTIMER_0_TICK_FREQ 96000000UL
-/* Timer tick period in ns (input period of the timer) */
-#define CTIMER_0_TICK_PERIOD 10UL
 /* Definition of peripheral ID */
 #define MRT_1_PERIPHERAL MRT0
 /* Definition of channel 0 ID */
@@ -74,38 +72,38 @@ extern "C" {
 #define MRT_1_IRQ_PRIORITY 5
 /* MRT_1 interrupt handler identifier. */
 #define MRT_1_IRQHANDLER MRT0_IRQHandler
-/* Definition of peripheral ID */
-#define GPIO_1_GPIO GPIO
 /* BOARD_InitPeripherals defines for PINT */
 /* Definition of peripheral ID */
 #define PINT_1_PERIPHERAL ((PINT_Type *) PINT_BASE)
 /* PINT_1 interrupt vector ID (number). */
 #define PINT_1_PINT_0_IRQN PIN_INT0_IRQn
-/* PINT_1 interrupt vector priority. */
-#define PINT_1_PINT_0_IRQ_PRIORITY 5
 /* PINT_1 interrupt vector ID (number). */
 #define PINT_1_PINT_1_IRQN PIN_INT1_IRQn
 /* Definition of PINT interrupt ID for interrupt 0  */
 #define PINT_1_INT_0 kPINT_PinInt0
 /* Definition of PINT interrupt ID for interrupt 1  */
 #define PINT_1_INT_1 kPINT_PinInt1
+/* Definition of peripheral ID */
+#define USART_0_PERIPHERAL ((USART_Type *)FLEXCOMM0)
+/* Definition of the clock source frequency */
+#define USART_0_CLOCK_SOURCE 12000000UL
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
+extern const ctimer_config_t CTIMER_0_config;
 extern const ctimer_config_t CTIMER_1_config;
 extern const i2c_master_config_t I2C_7_config;
-extern const usart_config_t USART_0_config;
-extern const ctimer_config_t CTIMER_0_config;
 extern const mrt_config_t MRT_1_config;
+extern const usart_config_t USART_0_config;
 
 /***********************************************************************************************************************
  * Callback functions
  **********************************************************************************************************************/
 /* INT_0 callback function for the PINT_1 component */
-extern void fan_tacho_int_1(pint_pin_int_t,uint32_t);
+extern void fan_tacho_int_1(pint_pin_int_t pintr ,uint32_t pmatch_status);
 /* INT_1 callback function for the PINT_1 component */
-extern void fan_tacho_int_2(pint_pin_int_t,uint32_t);
+extern void fan_tacho_int_2(pint_pin_int_t pintr ,uint32_t pmatch_status);
 
 /***********************************************************************************************************************
  * Initialization functions

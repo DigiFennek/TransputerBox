@@ -3,16 +3,28 @@
 #include "peripherals.h"
 #include "libusbdev.h"
 #include "pin_mux.h"
+#include "mcmgr.h"
 #include "fifo.h"
 #include "beep.h"
 
 // public
 transputer_t transputer;
-transputer_c012_t c012;
 
 // private
 static uint32_t status_new;
 static uint32_t status_old;
+
+// multicore data for core M0
+typedef volatile struct
+{
+	fifo_t *rx_fifo;
+	fifo_t *tx_fifo;
+} core_m0_data_t;
+
+static core_m0_data_t core_m0_data;
+
+// Address of RAM, where the image for core M0 should be copied
+#define CORE1_BOOT_ADDRESS (void *)0x20010000
 
 #define TRANSPUTER_LED_TIME_10ms 10
 
@@ -29,7 +41,7 @@ enum
 // called by lusb_BulkIN_Hdlr
 uint32_t bulk_in_callback(uint8_t *buffer, uint32_t len)
 {
-	len = fifo_deq(c012.tx_fifo, buffer, len);
+	len = fifo_deq(core_m0_data.tx_fifo, buffer, len);
 	if (len) {
 		transputer.upload_led_10ms = TRANSPUTER_LED_TIME_10ms;
 	}
@@ -40,107 +52,117 @@ uint32_t bulk_in_callback(uint8_t *buffer, uint32_t len)
 bool bulk_out_callback(uint8_t *buffer, uint32_t len)
 {
 	if (power.state == power_state_ready) {
-		if (fifo_enq(c012.rx_fifo, buffer, len) != len) {
+		if (fifo_enq(core_m0_data.rx_fifo, buffer, len) != len) {
 			transputer.stall_flag = true;
 		} else {
 			transputer.download_led_10ms = TRANSPUTER_LED_TIME_10ms;
 		}
-		fifo_int_t count = fifo_count(c012.rx_fifo);
-		if (count > fifo_size(c012.rx_fifo) / 2) {
-			transputer.stop_flag = true;
-		}
 	} else {
 		// powered off: send back null data
 		memset(buffer, 0, len);
-		fifo_enq(c012.tx_fifo, buffer, len);
+		fifo_enq(core_m0_data.tx_fifo, buffer, len);
 	}
 	return true;
 }
 
 static void reset_transputer(bool analyse)
 {
-	// reset C012 interface running on core 1
-	c012.power = false;
-	c012.reset = true;
-	while(c012.reset);
+    // reboot boot secondary core application
+	MCMGR_TriggerEventForce(kMCMGR_RemoteCoreDownEvent, 0);
+	for(int i= 0; i < 1000; i++);
+	MCMGR_StartCore(kMCMGR_Core1, CORE1_BOOT_ADDRESS, (uint32_t)&core_m0_data, kMCMGR_Start_Synchronous);
+	for(int i= 0; i < 1000; i++);
 
-	if (power.state >= power_state_reset) {
-		GPIO_PinWrite(BOARD_RESET_GPIO, BOARD_RESET_PORT, BOARD_RESET_PIN, false);
-		for(int i= 0; i < 100; i++);
-		GPIO_PinWrite(BOARD_ANALYSE_GPIO, BOARD_ANALYSE_PORT, BOARD_ANALYSE_PIN, false);
-		for(int i= 0; i < 100; i++);
-		GPIO_PinWrite(BOARD_ANALYSE_GPIO, BOARD_ANALYSE_PORT, BOARD_ANALYSE_PIN, analyse);
-		for(int i= 0; i < 100; i++);
-		GPIO_PinWrite(BOARD_RESET_GPIO, BOARD_RESET_PORT, BOARD_RESET_PIN, true);
-		for(int i= 0; i < 100; i++);
-		GPIO_PinWrite(BOARD_RESET_GPIO, BOARD_RESET_PORT, BOARD_RESET_PIN, false);
-		for(int i= 0; i < 100; i++);
-		GPIO_PinWrite(BOARD_ANALYSE_GPIO, BOARD_ANALYSE_PORT, BOARD_ANALYSE_PIN, false);
-	}
+	GPIO_PinWrite(BOARD_RESET_GPIO, BOARD_RESET_PORT, BOARD_RESET_PIN, false);
+	for(int i= 0; i < 1000; i++);
+	GPIO_PinWrite(BOARD_ANALYSE_GPIO, BOARD_ANALYSE_PORT, BOARD_ANALYSE_PIN, false);
+	for(int i= 0; i < 1000; i++);
+	GPIO_PinWrite(BOARD_ANALYSE_GPIO, BOARD_ANALYSE_PORT, BOARD_ANALYSE_PIN, analyse);
+	for(int i= 0; i < 1000; i++);
+	GPIO_PinWrite(BOARD_RESET_GPIO, BOARD_RESET_PORT, BOARD_RESET_PIN, true);
+	for(int i= 0; i < 1000; i++);
+	GPIO_PinWrite(BOARD_RESET_GPIO, BOARD_RESET_PORT, BOARD_RESET_PIN, false);
+	for(int i= 0; i < 1000; i++);
+	GPIO_PinWrite(BOARD_ANALYSE_GPIO, BOARD_ANALYSE_PORT, BOARD_ANALYSE_PIN, false);
 
 	transputer.error_flag = false;
 	transputer.stall_flag = false;
 
-	// suspend download for 100ms
-	transputer.stop_timer_10ms = 10;
-	transputer.stop_flag = true;
+	// this will clear the stop flag (see below)
+	status_new |= usb_intr_stop;
+	status_old |= usb_intr_stop;
+
+	if (analyse) {
+		transputer.analyse_led_10ms = 100;
+	} else {
+		transputer.reset_led_10ms = 100;
+	}
 }
 
 void transputer_init(void)
 {
-	//transputer.link_speed = true;
+	// this will read the fifo pointers from the secondary core
+	MCMGR_StartCore(kMCMGR_Core1, CORE1_BOOT_ADDRESS, (uint32_t)&core_m0_data, kMCMGR_Start_Synchronous);
+	// give some time secondary core shut down again
+	for(int i= 0; i < 1000; i++);
 }
 
 void transputer_task(void)
 {
-	if (power.state == power_state_ready) {
-		if (!GPIO_PinRead(BOARD_ERROR_GPIO, BOARD_ERROR_PORT, BOARD_ERROR_PIN)) {
-			transputer.error_flag = true;
-		} else {
-			transputer.error_flag = false;
+	// power off
+	if (power.state == power_state_off) {
+		if (transputer.power_flag) {
+			MCMGR_TriggerEventForce(kMCMGR_RemoteCoreDownEvent, 0);
+			transputer.power_flag = false;
 		}
+	}
+
+	// power on
+	if (power.state == power_state_ready) {
+		if (!transputer.power_flag) {
+			reset_transputer(false);
+			transputer.power_flag = true;
+		}
+	}
+
+	// check error pin
+	if (power.state == power_state_ready) {
+		transputer.error_flag = !GPIO_PinRead(BOARD_ERROR_GPIO, BOARD_ERROR_PORT, BOARD_ERROR_PIN);
 	} else {
 		transputer.error_flag = false;
 	}
 
-	switch(power.state) {
-	case power_state_ready:
+	// update link-speed pin
+	if (power.state == power_state_ready) {
 		GPIO_PinWrite(BOARD_LINK_SPEED_GPIO, BOARD_LINK_SPEED_PORT, BOARD_LINK_SPEED_PIN, transputer.link_speed);
-		break;
-	case power_state_reset:
-		reset_transputer(false);
-		c012.reset = true;
-		break;
-	default:
-		GPIO_PinWrite(BOARD_LINK_SPEED_GPIO, BOARD_LINK_SPEED_PORT, BOARD_LINK_SPEED_PIN, false);
-		c012.power = false;
-		break;
-	}
-
-	if (!transputer.stop_timer_10ms) {
-		fifo_int_t count = fifo_count(c012.rx_fifo);
-		if (count < fifo_size(c012.rx_fifo) / 8) {
-			transputer.stop_flag = false;
-		}
-	}
-
-	if (transputer.stop_flag) {
-		status_new |= usb_intr_stop;
 	} else {
+		GPIO_PinWrite(BOARD_LINK_SPEED_GPIO, BOARD_LINK_SPEED_PORT, BOARD_LINK_SPEED_PIN, false);
+	}
+
+	// update the stop flag
+	fifo_int_t count = fifo_count(core_m0_data.rx_fifo);
+	if (count < fifo_size(core_m0_data.rx_fifo) / 8) {
 		status_new &= ~usb_intr_stop;
 	}
+	if (count > fifo_size(core_m0_data.rx_fifo) / 2) {
+		status_new |= usb_intr_stop;
+	}
 
+	// update the error flag
 	if (transputer.error_flag) {
 		status_new |= usb_intr_error;
 	} else {
 		status_new &= ~usb_intr_error;
 	}
 
+	// update status to host
 	if (status_old != status_new) {
-		libusbdev_SendInterrupt(status_new);
-		status_old = status_new;
+		if (libusbdev_SendInterrupt(status_new) == LPC_OK) {
+			status_old = status_new;
+		}
 	}
 
+	// update status from host
 	uint32_t status;
 	if (libusbdev_ReadInterrupt(&status) == LPC_OK) {
 		if (status & usb_intr_reset) {
@@ -157,7 +179,7 @@ void transputer_task(void)
 		}
 	}
 
-	if (libusbdev_Connected()) {
+	if (transputer.power_flag) {
 		GPIO_PinWrite(BOARD_LED_GPIO, BOARD_LED_PORT, BOARD_LED_PIN, false);
 	} else {
 		GPIO_PinWrite(BOARD_LED_GPIO, BOARD_LED_PORT, BOARD_LED_PIN, true);

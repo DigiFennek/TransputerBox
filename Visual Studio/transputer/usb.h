@@ -11,5 +11,6 @@ typedef DWORD (*USB_CALLBACK)(UCHAR PipeID, DWORD byte_count, UCHAR* buffer);
 
 void usbConnect(void);
 void usbDisconnect(void);
+bool usbIsConnected(void);
 void usbSignalPipe(UCHAR PipeID);
 void usbInit(USB_CALLBACK callback);

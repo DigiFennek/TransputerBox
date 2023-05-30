@@ -58,5 +58,31 @@ void BOARD_BootClockFROHF96M(void);
 }
 #endif /* __cplusplus*/
 
+/*******************************************************************************
+ ******************** Configuration BOARD_BootClockPLL150M *********************
+ ******************************************************************************/
+/*******************************************************************************
+ * Definitions for BOARD_BootClockPLL150M configuration
+ ******************************************************************************/
+#define BOARD_BOOTCLOCKPLL150M_CORE_CLOCK         150000000U  /*!< Core clock frequency: 150000000Hz */
+
+
+/*******************************************************************************
+ * API for BOARD_BootClockPLL150M configuration
+ ******************************************************************************/
+#if defined(__cplusplus)
+extern "C" {
+#endif /* __cplusplus*/
+
+/*!
+ * @brief This function executes configuration of clocks.
+ *
+ */
+void BOARD_BootClockPLL150M(void);
+
+#if defined(__cplusplus)
+}
+#endif /* __cplusplus*/
+
 #endif /* _CLOCK_CONFIG_H_ */
 

@@ -19,11 +19,11 @@
 /* clang-format off */
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
-product: Clocks v6.0
+product: Clocks v7.0
 processor: LPC54114J256
 package_id: LPC54114J256BD64
 mcu_data: ksdk2_0
-processor_version: 6.0.2
+processor_version: 8.0.2
 board: LPCXpresso54114
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -47,7 +47,7 @@ extern uint32_t SystemCoreClock;
  ******************************************************************************/
 void BOARD_InitBootClocks(void)
 {
-    BOARD_BootClockFROHF96M();
+    BOARD_BootClockPLL150M();
 }
 
 /*******************************************************************************
@@ -57,7 +57,6 @@ void BOARD_InitBootClocks(void)
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!Configuration
 name: BOARD_BootClockFROHF96M
-called_from_default_init: true
 outputs:
 - {id: FXCOM0_clock.outFreq, value: 12 MHz}
 - {id: FXCOM7_clock.outFreq, value: 12 MHz}
@@ -102,6 +101,96 @@ void BOARD_BootClockFROHF96M(void)
     CLOCK_AttachClk(kFRO12M_to_FLEXCOMM7);                  /*!< Switch FLEXCOMM7 to FRO12M */
     /*< Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKFROHF96M_CORE_CLOCK;
+#endif
+}
+
+/*******************************************************************************
+ ******************** Configuration BOARD_BootClockPLL150M *********************
+ ******************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+!!Configuration
+name: BOARD_BootClockPLL150M
+called_from_default_init: true
+outputs:
+- {id: FXCOM0_clock.outFreq, value: 12 MHz}
+- {id: FXCOM7_clock.outFreq, value: 12 MHz}
+- {id: PLL_clock.outFreq, value: 150 MHz, locked: true, accuracy: '0.001'}
+- {id: System_clock.outFreq, value: 150 MHz}
+- {id: USB_clock.outFreq, value: 48 MHz}
+settings:
+- {id: SYSCON.DIRECTO.sel, value: SYSCON.PLL}
+- {id: SYSCON.FXCOMCLKSEL0.sel, value: SYSCON.fro_12m}
+- {id: SYSCON.FXCOMCLKSEL7.sel, value: SYSCON.fro_12m}
+- {id: SYSCON.MAINCLKSELA.sel, value: SYSCON.fro_hf}
+- {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.PLL_BYPASS}
+- {id: SYSCON.M_MULT.scale, value: '76800'}
+- {id: SYSCON.PLL_BYPASS.sel, value: SYSCON.DIRECTO}
+- {id: SYSCON.SYSPLLCLKSEL.sel, value: SYSCON.fro_12m}
+- {id: SYSCON.USBCLKDIV.scale, value: '2'}
+- {id: SYSCON.USBCLKSEL.sel, value: SYSCON.fro_hf}
+sources:
+- {id: SYSCON.WDT_FREQ.outFreq, value: 1 MHz}
+- {id: SYSCON.fro_hf.outFreq, value: 96 MHz}
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+/*******************************************************************************
+ * Variables for BOARD_BootClockPLL150M configuration
+ ******************************************************************************/
+/*******************************************************************************
+ * Code for BOARD_BootClockPLL150M configuration
+ ******************************************************************************/
+void BOARD_BootClockPLL150M(void)
+{
+#ifndef SDK_SECONDARY_CORE
+    /*!< Set up the clock sources */
+    /*!< Set up FRO */
+    POWER_DisablePD(kPDRUNCFG_PD_FRO_EN);                   /*!< Ensure FRO is on  */
+    CLOCK_SetupFROClocking(12000000U);                    /*!< Set up FRO to the 12 MHz, just for sure */
+    CLOCK_AttachClk(kFRO12M_to_MAIN_CLK);                  /*!< Switch to FRO 12MHz first to ensure we can change voltage without accidentally
+                                                                being below the voltage for current speed */
+    POWER_SetVoltageForFreq(150000000U);             /*!< Set voltage for the one of the fastest clock outputs: System clock output */
+    CLOCK_SetFLASHAccessCyclesForFreq(150000000U);   /*!< Set FLASH wait states for core */
+
+    /*!< Set up PLL */
+    CLOCK_AttachClk(kFRO12M_to_SYS_PLL);                  /*!< Switch PLL clock source selector to FRO12M */
+    const pll_setup_t pllSetup = {
+        .syspllctrl = SYSCON_SYSPLLCTRL_UPLIMOFF_MASK | SYSCON_SYSPLLCTRL_DIRECTO_MASK,
+        .syspllndec = SYSCON_SYSPLLNDEC_NDEC(1U),
+        .syspllpdec = SYSCON_SYSPLLPDEC_PDEC(2U),
+        .syspllssctrl = {0x0U,(SYSCON_SYSPLLSSCTRL1_MD(38400U) | (uint32_t)(kSS_MF_512) | (uint32_t)(kSS_MR_K0) | (uint32_t)(kSS_MC_NOC))},
+        .pllRate = 150000000U,
+        .flags =  PLL_SETUPFLAG_POWERUP
+    };
+    CLOCK_SetPLLFreq(&pllSetup); /*!< Configure PLL to the desired values */
+
+    /* PLL in Fractional/Spread spectrum mode */
+    /* SYSTICK is used for waiting for PLL stabilization */
+
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk, 0U, true);              /*!< Reset SysTick divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk, 3U, false);             /*!< Set SysTick divider to value 3 */
+    SysTick->LOAD = 27999UL;                              /*!< Set SysTick count value */
+    SysTick->VAL = 0UL;                                           /*!< Reset current count value */
+    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk;                      /*!< Enable SYSTICK */
+    while((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) != SysTick_CTRL_COUNTFLAG_Msk){}   /*!< Waiting for PLL stabilization */
+    SysTick->CTRL = 0UL;                                          /*!< Stop SYSTICK */
+
+    CLOCK_SetupFROClocking(96000000U);              /*!< Set up high frequency FRO output to selected frequency */
+
+    /*!< Set up dividers */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);                  /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivUsbClk, 0U, true);                  /*!< Reset USBCLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivUsbClk, 2U, false);                  /*!< Set USBCLKDIV divider to value 2 */
+
+    /*!< Set up clock selectors - Attach clocks to the peripheries */
+    CLOCK_AttachClk(kSYS_PLL_to_MAIN_CLK);                  /*!< Switch MAIN_CLK to SYS_PLL */
+    CLOCK_AttachClk(kFRO12M_to_FLEXCOMM0);                  /*!< Switch FLEXCOMM0 to FRO12M */
+    CLOCK_AttachClk(kFRO12M_to_FLEXCOMM7);                  /*!< Switch FLEXCOMM7 to FRO12M */
+    CLOCK_AttachClk(kFRO_HF_to_USB_CLK);                  /*!< Switch USB_CLK to FRO_HF */
+    SYSCON->MAINCLKSELA = ((SYSCON->MAINCLKSELA & ~SYSCON_MAINCLKSELA_SEL_MASK) | SYSCON_MAINCLKSELA_SEL(3U)); /*!< Switch MAINCLKSELA to FRO_HF even it is not used for MAINCLKSELB */
+    /*< Set SystemCoreClock variable. */
+    SystemCoreClock = BOARD_BOOTCLOCKPLL150M_CORE_CLOCK;
 #endif
 }
 

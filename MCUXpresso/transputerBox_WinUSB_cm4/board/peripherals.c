@@ -6,14 +6,15 @@
 /* clang-format off */
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
-product: Peripherals v6.0
+product: Peripherals v8.0
 processor: LPC54114J256
 package_id: LPC54114J256BD64
 mcu_data: ksdk2_0
-processor_version: 6.0.2
+processor_version: 8.0.2
 board: LPCXpresso54114
 functionalGroups:
 - name: BOARD_InitPeripherals
+  UUID: 6aadbd7b-8bcc-4d0b-9e07-5bff51923433
   called_from_default_init: true
   selectedCore: cm4
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -22,14 +23,9 @@ functionalGroups:
 component:
 - type: 'system'
 - type_id: 'system_54b53072540eeeb8f8e9343e71f28176'
-- global_system_definitions: []
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-component:
-- type: 'msg'
-- type_id: 'msg_6e2baaf3b97dbeef01c0043275f9a0e7'
-- global_messages: []
+- global_system_definitions:
+  - user_definitions: ''
+  - user_includes: ''
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -42,6 +38,48 @@ component:
  * BOARD_InitPeripherals functional group
  **********************************************************************************************************************/
 /***********************************************************************************************************************
+ * CTIMER_0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'CTIMER_0'
+- type: 'ctimer'
+- mode: 'Capture_Match'
+- custom_name_enabled: 'true'
+- type_id: 'ctimer_c8b90232d8b6318ba1dac2cf08fb5f4a'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'CTIMER0'
+- config_sets:
+  - fsl_ctimer:
+    - ctimerConfig:
+      - mode: 'kCTIMER_TimerMode'
+      - clockSource: 'FunctionClock'
+      - clockSourceFreq: 'BOARD_BootClockFROHF96M'
+      - timerPrescaler: '1'
+    - EnableTimerInInit: 'false'
+    - matchChannels: []
+    - interruptCallbackConfig:
+      - interrupt:
+        - IRQn: 'CTIMER0_IRQn'
+        - enable_interrrupt: 'enabled'
+        - enable_priority: 'false'
+        - priority: '0'
+      - callback: 'kCTIMER_NoCallback'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const ctimer_config_t CTIMER_0_config = {
+  .mode = kCTIMER_TimerMode,
+  .input = kCTIMER_Capture_0,
+  .prescale = 0
+};
+
+static void CTIMER_0_init(void) {
+  /* CTIMER0 peripheral initialization */
+  CTIMER_Init(CTIMER_0_PERIPHERAL, &CTIMER_0_config);
+}
+
+/***********************************************************************************************************************
  * CTIMER_1 initialization code
  **********************************************************************************************************************/
 /* clang-format off */
@@ -50,6 +88,7 @@ instance:
 - name: 'CTIMER_1'
 - type: 'ctimer'
 - mode: 'PWM'
+- custom_name_enabled: 'true'
 - type_id: 'ctimer_c8b90232d8b6318ba1dac2cf08fb5f4a'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'CTIMER1'
@@ -73,6 +112,7 @@ instance:
     - interruptCallbackConfig:
       - interrupt:
         - IRQn: 'CTIMER0_IRQn'
+        - enable_interrrupt: 'enabled'
         - enable_priority: 'false'
         - priority: '0'
       - callback: 'kCTIMER_NoCallback'
@@ -84,12 +124,34 @@ const ctimer_config_t CTIMER_1_config = {
   .prescale = 255
 };
 
-void CTIMER_1_init(void) {
+static void CTIMER_1_init(void) {
   /* CTIMER1 peripheral initialization */
   CTIMER_Init(CTIMER_1_PERIPHERAL, &CTIMER_1_config);
   /* PWM channel 0 of CTIMER1 peripheral initialization */
   CTIMER_SetupPwmPeriod(CTIMER_1_PERIPHERAL, CTIMER_1_PWM_0_CHANNEL, CTIMER_1_PWM_PERIOD, CTIMER_1_PWM_0_DUTY, false);
 }
+
+/***********************************************************************************************************************
+ * GPIO_1 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'GPIO_1'
+- type: 'lpc_gpio'
+- mode: 'GPIO'
+- custom_name_enabled: 'true'
+- type_id: 'lpc_gpio_8c9ab9b3668a514c1f4609fe43001865'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'GPIO'
+- config_sets:
+  - lpc_gpio: []
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+
+/* Empty initialization function (commented out)
+static void GPIO_1_init(void) {
+} */
 
 /***********************************************************************************************************************
  * I2C_7 initialization code
@@ -100,6 +162,7 @@ instance:
 - name: 'I2C_7'
 - type: 'flexcomm_i2c'
 - mode: 'I2C_Polling'
+- custom_name_enabled: 'true'
 - type_id: 'flexcomm_i2c_567d1a9d97c12e5d39b00259c3436dc4'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'FLEXCOMM7'
@@ -116,107 +179,14 @@ instance:
 /* clang-format on */
 const i2c_master_config_t I2C_7_config = {
   .enableMaster = true,
-  .baudRate_Bps = 100000,
+  .baudRate_Bps = 100000UL,
   .enableTimeout = false
 };
 
-void I2C_7_init(void) {
+static void I2C_7_init(void) {
   RESET_PeripheralReset( kFC7_RST_SHIFT_RSTn);
   /* Initialization function */
   I2C_MasterInit(I2C_7_PERIPHERAL, &I2C_7_config, I2C_7_CLOCK_SOURCE);
-}
-
-/***********************************************************************************************************************
- * USART_0 initialization code
- **********************************************************************************************************************/
-/* clang-format off */
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-instance:
-- name: 'USART_0'
-- type: 'flexcomm_usart'
-- mode: 'polling'
-- type_id: 'flexcomm_usart_c0a0c6d3d3ef57701b439b00070052a8'
-- functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'FLEXCOMM0'
-- config_sets:
-  - usartConfig_t:
-    - usartConfig:
-      - clockSource: 'FXCOMFunctionClock'
-      - clockSourceFreq: 'BOARD_BootClockFROHF96M'
-      - baudRate_Bps: '115200'
-      - syncMode: 'kUSART_SyncModeDisabled'
-      - parityMode: 'kUSART_ParityDisabled'
-      - stopBitCount: 'kUSART_OneStopBit'
-      - bitCountPerChar: 'kUSART_8BitsPerChar'
-      - loopback: 'false'
-      - txWatermark: 'kUSART_TxFifo0'
-      - rxWatermark: 'kUSART_RxFifo1'
-      - enableRx: 'true'
-      - enableTx: 'true'
-      - clockPolarity: 'kUSART_RxSampleOnFallingEdge'
-      - enableContinuousSCLK: 'false'
-    - quick_selection: 'QuickSelection1'
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-/* clang-format on */
-const usart_config_t USART_0_config = {
-  .baudRate_Bps = 115200,
-  .syncMode = kUSART_SyncModeDisabled,
-  .parityMode = kUSART_ParityDisabled,
-  .stopBitCount = kUSART_OneStopBit,
-  .bitCountPerChar = kUSART_8BitsPerChar,
-  .loopback = false,
-  .txWatermark = kUSART_TxFifo0,
-  .rxWatermark = kUSART_RxFifo1,
-  .enableRx = true,
-  .enableTx = true,
-  .clockPolarity = kUSART_RxSampleOnFallingEdge,
-  .enableContinuousSCLK = false
-};
-
-void USART_0_init(void) {
-  /* Reset FLEXCOMM device */
-  RESET_PeripheralReset(kFC0_RST_SHIFT_RSTn);
-  USART_Init(USART_0_PERIPHERAL, &USART_0_config, USART_0_CLOCK_SOURCE);
-}
-
-/***********************************************************************************************************************
- * CTIMER_0 initialization code
- **********************************************************************************************************************/
-/* clang-format off */
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-instance:
-- name: 'CTIMER_0'
-- type: 'ctimer'
-- mode: 'Capture_Match'
-- type_id: 'ctimer_c8b90232d8b6318ba1dac2cf08fb5f4a'
-- functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'CTIMER0'
-- config_sets:
-  - fsl_ctimer:
-    - ctimerConfig:
-      - mode: 'kCTIMER_TimerMode'
-      - clockSource: 'FunctionClock'
-      - clockSourceFreq: 'BOARD_BootClockFROHF96M'
-      - timerPrescaler: '1'
-    - EnableTimerInInit: 'false'
-    - matchChannels: []
-    - interruptCallbackConfig:
-      - interrupt:
-        - IRQn: 'CTIMER0_IRQn'
-        - enable_priority: 'false'
-        - priority: '0'
-      - callback: 'kCTIMER_NoCallback'
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-/* clang-format on */
-const ctimer_config_t CTIMER_0_config = {
-  .mode = kCTIMER_TimerMode,
-  .input = kCTIMER_Capture_0,
-  .prescale = 0
-};
-
-void CTIMER_0_init(void) {
-  /* CTIMER0 peripheral initialization */
-  CTIMER_Init(CTIMER_0_PERIPHERAL, &CTIMER_0_config);
 }
 
 /***********************************************************************************************************************
@@ -228,6 +198,7 @@ instance:
 - name: 'MRT_1'
 - type: 'mrt'
 - mode: 'general_config'
+- custom_name_enabled: 'true'
 - type_id: 'mrt_ec4ff9f008b2eee803e5f398b3b3325f'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'MRT0'
@@ -256,6 +227,7 @@ instance:
       - enableInterrupt: 'true'
       - interrupt:
         - IRQn: 'MRT0_IRQn'
+        - enable_interrrupt: 'enabled'
         - enable_priority: 'true'
         - priority: '5'
         - enable_custom_name: 'false'
@@ -265,7 +237,7 @@ const mrt_config_t MRT_1_config = {
   .enableMultiTask = false
 };
 
-void MRT_1_init(void) {
+static void MRT_1_init(void) {
   /* MRT0 peripheral initialization */
   MRT_Init(MRT_1_PERIPHERAL, &MRT_1_config);
   /* MRT channel 0 of MRT0 peripheral initialization */
@@ -276,34 +248,14 @@ void MRT_1_init(void) {
   MRT_EnableInterrupts(MRT_1_PERIPHERAL, MRT_1_CHANNEL_0, kMRT_TimerInterruptEnable);
   /* MRT channel 1 interrupt of MRT0 peripheral initialization */
   MRT_EnableInterrupts(MRT_1_PERIPHERAL, MRT_1_CHANNEL_1, kMRT_TimerInterruptEnable);
-  /* Interrupt vector MRT0_IRQn priority settings in the NVIC */
+  /* Interrupt vector MRT0_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(MRT_1_IRQN, MRT_1_IRQ_PRIORITY);
-  /* Enable interrupt MRT0_IRQn request in the NVIC */
+  /* Enable interrupt MRT0_IRQn request in the NVIC. */
   EnableIRQ(MRT_1_IRQN);
   /* MRT channel 0 start of MRT0 peripheral initialization */
   MRT_StartTimer(MRT_1_PERIPHERAL, MRT_1_CHANNEL_0, MRT_1_CHANNEL_0_TICKS);
   /* MRT channel 1 start of MRT0 peripheral initialization */
   MRT_StartTimer(MRT_1_PERIPHERAL, MRT_1_CHANNEL_1, MRT_1_CHANNEL_1_TICKS);
-}
-
-/***********************************************************************************************************************
- * GPIO_1 initialization code
- **********************************************************************************************************************/
-/* clang-format off */
-/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-instance:
-- name: 'GPIO_1'
-- type: 'lpc_gpio'
-- mode: 'GPIO'
-- type_id: 'lpc_gpio_8c9ab9b3668a514c1f4609fe43001865'
-- functional_group: 'BOARD_InitPeripherals'
-- peripheral: 'GPIO'
-- config_sets:
-  - lpc_gpio: []
- * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
-/* clang-format on */
-
-void GPIO_1_init(void) {
 }
 
 /***********************************************************************************************************************
@@ -315,6 +267,7 @@ instance:
 - name: 'PINT_1'
 - type: 'pint'
 - mode: 'interrupt_mode'
+- custom_name_enabled: 'true'
 - type_id: 'pint_cf4a806bb2a6c1ffced58ae2ed7b43af'
 - functional_group: 'BOARD_InitPeripherals'
 - peripheral: 'PINT'
@@ -329,7 +282,8 @@ instance:
         - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT0_IRQn'
-          - enable_priority: 'true'
+          - enable_interrrupt: 'enabled'
+          - enable_priority: 'false'
           - priority: '5'
       - 1:
         - interrupt_id: 'INT_1'
@@ -339,16 +293,15 @@ instance:
         - enable_callback: 'true'
         - interrupt:
           - IRQn: 'PIN_INT1_IRQn'
+          - enable_interrrupt: 'enabled'
           - enable_priority: 'false'
           - priority: '0'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
-void PINT_1_init(void) {
+static void PINT_1_init(void) {
   /* PINT_1 initiation  */
-  PINT_Init(PINT);
-  /* Interrupt vector PIN_INT0_IRQn priority settings in the NVIC */
-  NVIC_SetPriority(PINT_1_PINT_0_IRQN, PINT_1_PINT_0_IRQ_PRIORITY);
+  PINT_Init(PINT_1_PERIPHERAL);
   /* PINT_1 PINT.0 configuration */
   PINT_PinInterruptConfig(PINT_1_PERIPHERAL, PINT_1_INT_0, kPINT_PinIntEnableBothEdges, fan_tacho_int_1);
   /* PINT_1 PINT.1 configuration */
@@ -360,18 +313,71 @@ void PINT_1_init(void) {
 }
 
 /***********************************************************************************************************************
+ * USART_0 initialization code
+ **********************************************************************************************************************/
+/* clang-format off */
+/* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+instance:
+- name: 'USART_0'
+- type: 'flexcomm_usart'
+- mode: 'polling'
+- custom_name_enabled: 'true'
+- type_id: 'flexcomm_usart_c0a0c6d3d3ef57701b439b00070052a8'
+- functional_group: 'BOARD_InitPeripherals'
+- peripheral: 'FLEXCOMM0'
+- config_sets:
+  - usartConfig_t:
+    - usartConfig:
+      - clockSource: 'FXCOMFunctionClock'
+      - clockSourceFreq: 'BOARD_BootClockPLL150M'
+      - baudRate_Bps: '115200'
+      - syncMode: 'kUSART_SyncModeDisabled'
+      - parityMode: 'kUSART_ParityDisabled'
+      - stopBitCount: 'kUSART_OneStopBit'
+      - bitCountPerChar: 'kUSART_8BitsPerChar'
+      - loopback: 'false'
+      - txWatermark: 'kUSART_TxFifo0'
+      - rxWatermark: 'kUSART_RxFifo1'
+      - enableRx: 'true'
+      - enableTx: 'true'
+      - clockPolarity: 'kUSART_RxSampleOnFallingEdge'
+      - enableContinuousSCLK: 'false'
+    - quick_selection: 'QuickSelection1'
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
+/* clang-format on */
+const usart_config_t USART_0_config = {
+  .baudRate_Bps = 115200UL,
+  .syncMode = kUSART_SyncModeDisabled,
+  .parityMode = kUSART_ParityDisabled,
+  .stopBitCount = kUSART_OneStopBit,
+  .bitCountPerChar = kUSART_8BitsPerChar,
+  .loopback = false,
+  .txWatermark = kUSART_TxFifo0,
+  .rxWatermark = kUSART_RxFifo1,
+  .enableRx = true,
+  .enableTx = true,
+  .clockPolarity = kUSART_RxSampleOnFallingEdge,
+  .enableContinuousSCLK = false
+};
+
+static void USART_0_init(void) {
+  /* Reset FLEXCOMM device */
+  RESET_PeripheralReset(kFC0_RST_SHIFT_RSTn);
+  USART_Init(USART_0_PERIPHERAL, &USART_0_config, USART_0_CLOCK_SOURCE);
+}
+
+/***********************************************************************************************************************
  * Initialization functions
  **********************************************************************************************************************/
 void BOARD_InitPeripherals(void)
 {
   /* Initialize components */
+  CTIMER_0_init();
   CTIMER_1_init();
   I2C_7_init();
-  USART_0_init();
-  CTIMER_0_init();
   MRT_1_init();
-  GPIO_1_init();
   PINT_1_init();
+  USART_0_init();
 }
 
 /***********************************************************************************************************************

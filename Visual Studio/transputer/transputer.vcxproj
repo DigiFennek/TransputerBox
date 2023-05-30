@@ -93,7 +93,8 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\dosbox-0.74-2\src\platform\visualc;$(ProjectDir)..\dosbox-0.74-2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\dosbox-0.74-2\src\platform\visualc;$(ProjectDir)..\dosbox-0.74-2\include;$(ProjectDir)..\SDL-1.2.15\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,7 +112,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\dosbox-0.74-2\src\platform\visualc;$(ProjectDir)..\dosbox-0.74-2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\dosbox-0.74-2\src\platform\visualc;$(ProjectDir)..\dosbox-0.74-2\include;$(ProkectDir)..\SDL-1.2.15\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,7 +156,6 @@
   <ItemGroup>
     <ClInclude Include="device.h" />
     <ClInclude Include="fifo.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="iusb004.h" />
     <ClInclude Include="iusb008.h" />
     <ClInclude Include="usb.h" />

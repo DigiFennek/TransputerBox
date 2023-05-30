@@ -1,13 +1,14 @@
 #include "display.h"
 #include "power.h"
+#include "libusbdev.h"
 #include "transputer.h"
 #include "peripherals.h"
 
 // private
 static uint8_t display_new[8];
 static uint8_t display_old[8];
-
 static bool brightness_flag;
+static uint8_t display_mode;
 
 #define I2C_BUS I2C_7_PERIPHERAL
 
@@ -22,6 +23,31 @@ static bool brightness_flag;
 #define BRIGHTNESS_20 		5
 #define BRIGHTNESS_13		6
 #define BRIGHTNESS_0		7
+
+#define GLYPH_NONE			0
+#define GLYPH_STANDBY		1
+#define GLYPH_LINKSPEED_10	2
+#define GLYPH_LINKSPEED_20	3
+#define GLYPH_UP			4
+#define GLYPH_DOWN			5
+#define GLYPH_UP_DOWN		6
+#define GLYPH_COUNT         7
+
+enum {
+	display_mode_current,
+	display_mode_voltage,
+	display_mode_wattage
+};
+
+uint8_t glyph_table[GLYPH_COUNT][7] = {
+	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // GLYPH_NONE
+	{0x00, 0x0E, 0x1F, 0x1F, 0x1F, 0x0E, 0x00}, // GLYPH_STANDBY
+	{0x0E, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0E}, // GLYPH_LINKSPEED_10
+	{0x1F, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x1F}, // GLYPH_LINKSPEED_20
+	{0x04, 0x0E, 0x15, 0x04, 0x04, 0x04, 0x00}, // GLYPH_UP
+	{0x00, 0x04, 0x04, 0x04, 0x15, 0x0E, 0x04}, // GLYPH_DOWN
+	{0x04, 0x0E, 0x15, 0x04, 0x15, 0x0E, 0x04}, // GLYPH_UP_DOWN
+};
 
 static void write_port(uint8_t port, uint8_t byte)
 {
@@ -41,7 +67,19 @@ static void write_reg(uint8_t reg, uint8_t data)
 
 static void write_char(uint8_t pos, uint8_t ch)
 {
-	write_reg(0x18 | pos, ch);
+	if (ch <= GLYPH_COUNT) {
+		write_reg(0x00, ch);
+		write_reg(0x08, glyph_table[ch][0]);
+		write_reg(0x09, glyph_table[ch][1]);
+		write_reg(0x0A, glyph_table[ch][2]);
+		write_reg(0x0B, glyph_table[ch][3]);
+		write_reg(0x0C, glyph_table[ch][4]);
+		write_reg(0x0D, glyph_table[ch][5]);
+		write_reg(0x0E, glyph_table[ch][6]);
+		write_reg(0x18 | pos, ch + 0x80);
+	} else {
+		write_reg(0x18 | pos, ch);
+	}
 }
 
 static void set_brightness(uint8_t brightness)
@@ -53,46 +91,6 @@ static void set_brightness(uint8_t brightness)
 void display_init(void)
 {
 	set_brightness(BRIGHTNESS_13);
-
-	// standby icon
-	write_reg(0x00, 0x00);
-	write_reg(0x08, 0x00);
-	write_reg(0x09, 0x0E);
-	write_reg(0x0A, 0x1F);
-	write_reg(0x0B, 0x1F);
-	write_reg(0x0C, 0x1F);
-	write_reg(0x0D, 0x0E);
-	write_reg(0x0E, 0x00);
-
-	// upload icon
-	write_reg(0x00, 0x01);
-	write_reg(0x08, 0x04);
-	write_reg(0x09, 0x0E);
-	write_reg(0x0A, 0x15);
-	write_reg(0x0B, 0x04);
-	write_reg(0x0C, 0x04);
-	write_reg(0x0D, 0x04);
-	write_reg(0x0E, 0x00);
-
-	// download icon
-	write_reg(0x00, 0x02);
-	write_reg(0x08, 0x00);
-	write_reg(0x09, 0x04);
-	write_reg(0x0A, 0x04);
-	write_reg(0x0B, 0x04);
-	write_reg(0x0C, 0x15);
-	write_reg(0x0D, 0x0E);
-	write_reg(0x0E, 0x04);
-
-	// up/download icon
-	write_reg(0x00, 0x03);
-	write_reg(0x08, 0x04);
-	write_reg(0x09, 0x0E);
-	write_reg(0x0A, 0x15);
-	write_reg(0x0B, 0x04);
-	write_reg(0x0C, 0x15);
-	write_reg(0x0D, 0x0E);
-	write_reg(0x0E, 0x04);
 }
 
 static void write_text (char *text)
@@ -106,38 +104,84 @@ static void write_text (char *text)
 	}
 }
 
+static void display_value_unit(uint16_t value, char unit)
+{
+	if (value >= 10000) {
+		display_new[0] = '0' + (value / 10000) % 10;
+		display_new[1] = '0' + (value / 1000) % 10;
+	} else {
+		display_new[0] = ' ';
+		display_new[1] = '0' + (value / 1000) % 10;
+	}
+	display_new[2] = '.';
+	display_new[3] = '0' + (value / 100) % 10;
+	display_new[4] = unit;
+}
+
 static void write_status(void)
 {
 	if (power.state > power_state_off) {
-		if (power.current >= 10000) {
-			display_new[0] = '0' + (power.current / 10000) % 10;
-			display_new[1] = '0' + (power.current / 1000) % 10;
-		} else {
-			display_new[0] = ' ';
-			display_new[1] = '0' + (power.current / 1000) % 10;
+		switch(display_mode) {
+		case display_mode_current:
+			display_value_unit(power.current_mA, 'A');
+			break;
+		case display_mode_voltage:
+			display_value_unit(power.voltage_mV, 'V');
+			break;
+		case display_mode_wattage:
+			display_value_unit(power.wattage_mW, 'W');
+			break;
 		}
-		display_new[2] = '.';
-		display_new[3] = '0' + (power.current / 100) % 10;
-		display_new[4] = 'A';
-		display_new[5] = ' ';
+
+		if (transputer.analyse_led_10ms) {
+			display_new[5] = 'A';
+		} else if (transputer.reset_led_10ms) {
+			display_new[5] = 'R';
+		} else if (transputer.error_flag) {
+			display_new[5] = 'E';
+		} else {
+			display_new[5] = ' ';
+		}
+
 		if (transputer.download_led_10ms && transputer.upload_led_10ms) {
-			display_new[6] = '\x83';
+			display_new[6] = GLYPH_UP_DOWN;
 		} else if (transputer.download_led_10ms) {
-			display_new[6] = '\x82';
+			display_new[6] = GLYPH_DOWN;
 		} else if (transputer.upload_led_10ms) {
-			display_new[6] = '\x81';
+			display_new[6] = GLYPH_UP;
 		} else if (transputer.stall_flag) {
 			display_new[6] = '!';
 		} else {
 			display_new[6] = ' ';
 		}
-		if (transputer.error_flag) {
-			display_new[7] = 'E';
+
+		if (libusbdev_Connected()) {
+			if (transputer.link_speed) {
+				display_new[7] = GLYPH_LINKSPEED_20;
+			} else {
+				display_new[7] = GLYPH_LINKSPEED_10;
+			}
 		} else {
 			display_new[7] = ' ';
 		}
 	} else {
-		write_text("       \x80");
+		write_text("        ");
+		display_new[7] = GLYPH_STANDBY;
+	}
+}
+
+void display_next(void)
+{
+	switch(display_mode) {
+	case display_mode_current:
+		display_mode = display_mode_voltage;
+		break;
+	case display_mode_voltage:
+		display_mode = display_mode_wattage;
+		break;
+	case display_mode_wattage:
+		display_mode = display_mode_current;
+		break;
 	}
 }
 

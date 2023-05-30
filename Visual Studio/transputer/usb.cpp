@@ -25,7 +25,8 @@
 static DEVICE_DATA deviceData;
 static HANDLE USBThread;
 static BOOL USBThreadRunning;
-static bool USBReconnectFlag;
+static bool reconnectFlag;
+static bool isConnected;
 
 typedef struct
 {
@@ -53,7 +54,7 @@ static void PrintLastError(const char *Where)
 		LOG_MSG("TRANSPUTER: %s error %i", Where, Error);
 	}
 	if (Error == ERROR_GEN_FAILURE) {
-		USBReconnectFlag = true;
+		reconnectFlag = true;
 	}
 }
 
@@ -133,6 +134,11 @@ static HANDLE InitTransfer(USB_TRANSFER *Transfer, USB_CALLBACK Callback, UCHAR 
 	return Transfer->Overlapped.hEvent;
 }
 
+bool usbIsConnected(void)
+{
+	return isConnected && !reconnectFlag;
+}
+
 void usbDisconnect(void)
 {
 	if (USBThreadRunning) {
@@ -140,6 +146,7 @@ void usbDisconnect(void)
 		WaitForSingleObject(USBThread, INFINITE);
 		CloseDevice(&deviceData);
 	}
+	isConnected = false;
 }
 
 void usbConnect(void)
@@ -162,20 +169,16 @@ void usbConnect(void)
 			LOG_MSG("TRANSPUTER: error creating thread");
 		}
 		else {
-			if (!SetThreadPriority(USBThread, THREAD_PRIORITY_ABOVE_NORMAL)) {
-				LOG_MSG("TRANSPUTER: SetThreadPriority failed");
-			}
-			else {
-				LOG_MSG("TRANSPUTER: connected");
-			}
+			LOG_MSG("TRANSPUTER: connected");
+			isConnected = true;
 		}
 	}
 }
 
 void usbSignalPipe(UCHAR PipeID)
 {
-	if (!USBThreadRunning || USBReconnectFlag) {
-		USBReconnectFlag = false;
+	if (!USBThreadRunning || reconnectFlag) {
+		reconnectFlag = false;
 		usbConnect();
 	}
 
@@ -195,7 +198,7 @@ void usbInit(USB_CALLBACK callback)
 
 	hEvents[0] = InitTransfer(&BulkInTransfer, callback, PIPE_ID_BULK_IN, 64);
 	hEvents[1] = InitTransfer(&IntrInTransfer, callback, PIPE_ID_INTR_IN, 4);
-	hEvents[2] = InitTransfer(&BulkOutTransfer, callback, PIPE_ID_BULK_OUT, 64);
+	hEvents[2] = InitTransfer(&BulkOutTransfer, callback, PIPE_ID_BULK_OUT, 512);
 	hEvents[3] = InitTransfer(&IntrOutTransfer, callback, PIPE_ID_INTR_OUT, 4);
 
 	usbConnect();

@@ -255,17 +255,41 @@ void BOARD_InitBootPins(void);
  * @brief Selects pin function.: Alternative connection 0. */
 #define PIO023_FUNC_ALT0 0x00u
 /*!
+ * @brief
+ * Configures I2C features for standard mode, fast mode, and Fast Mode Plus operation.
+ * : Disabled.
+ * I2C 50 ns glitch filter disabled.
+ */
+#define PIO023_I2CFILTER_DISABLED 0x01u
+/*!
+ * @brief Controls slew rate of I2C pad.: GPIO mode. */
+#define PIO023_I2CSLEW_GPIO_MODE 0x01u
+/*!
  * @brief Select Analog/Digital mode.: Digital mode. */
 #define PIO024_DIGIMODE_DIGITAL 0x01u
 /*!
  * @brief Selects pin function.: Alternative connection 0. */
 #define PIO024_FUNC_ALT0 0x00u
 /*!
+ * @brief
+ * Configures I2C features for standard mode, fast mode, and Fast Mode Plus operation.
+ * : Disabled.
+ * I2C 50 ns glitch filter disabled.
+ */
+#define PIO024_I2CFILTER_DISABLED 0x01u
+/*!
  * @brief Select Analog/Digital mode.: Digital mode. */
 #define PIO025_DIGIMODE_DIGITAL 0x01u
 /*!
  * @brief Selects pin function.: Alternative connection 0. */
 #define PIO025_FUNC_ALT0 0x00u
+/*!
+ * @brief
+ * Configures I2C features for standard mode, fast mode, and Fast Mode Plus operation.
+ * : Disabled.
+ * I2C 50 ns glitch filter disabled.
+ */
+#define PIO025_I2CFILTER_DISABLED 0x01u
 /*!
  * @brief Select Analog/Digital mode.: Digital mode. */
 #define PIO02_DIGIMODE_DIGITAL 0x01u
@@ -483,197 +507,310 @@ void BOARD_InitBootPins(void);
 
 /*! @name PIO1_0 (number 14), Fan Tacho 1
   @{ */
-#define BOARD_FAN_TACHO_1_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_FAN_TACHO_1_PORT 1U   /*!<@brief PORT device name: 1U */
-#define BOARD_FAN_TACHO_1_PIN 0U    /*!<@brief 1U pin index: 0 */
-                                    /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_FAN_TACHO_1_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_FAN_TACHO_1_GPIO_PIN_MASK (1U << 0U) /*!<@brief GPIO pin mask */
+#define BOARD_FAN_TACHO_1_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_FAN_TACHO_1_PIN 0U                   /*!<@brief PORT pin number */
+#define BOARD_FAN_TACHO_1_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
+                                                   /* @} */
 
 /*! @name PIO1_1 (number 15), Fan Tacho 2
   @{ */
-#define BOARD_FAN_TACHO_2_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_FAN_TACHO_2_PORT 1U   /*!<@brief PORT device name: 1U */
-#define BOARD_FAN_TACHO_2_PIN 1U    /*!<@brief 1U pin index: 1 */
-                                    /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_FAN_TACHO_2_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_FAN_TACHO_2_GPIO_PIN_MASK (1U << 1U) /*!<@brief GPIO pin mask */
+#define BOARD_FAN_TACHO_2_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_FAN_TACHO_2_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_FAN_TACHO_2_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+                                                   /* @} */
 
 /*! @name PIO0_2 (number 36), Reset
   @{ */
-#define BOARD_RESET_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_RESET_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_RESET_PIN 2U    /*!<@brief 0U pin index: 2 */
-                              /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_RESET_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_RESET_GPIO_PIN_MASK (1U << 2U) /*!<@brief GPIO pin mask */
+#define BOARD_RESET_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_RESET_PIN 2U                   /*!<@brief PORT pin number */
+#define BOARD_RESET_PIN_MASK (1U << 2U)      /*!<@brief PORT pin mask */
+                                             /* @} */
 
 /*! @name PIO0_3 (number 37), Power On
   @{ */
-#define BOARD_PON_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_PON_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_PON_PIN 3U    /*!<@brief 0U pin index: 3 */
-                            /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_PON_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_PON_GPIO_PIN_MASK (1U << 3U) /*!<@brief GPIO pin mask */
+#define BOARD_PON_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_PON_PIN 3U                   /*!<@brief PORT pin number */
+#define BOARD_PON_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
+                                           /* @} */
 
 /*! @name PIO0_5 (number 39), Link Speed
   @{ */
-#define BOARD_LINK_SPEED_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_LINK_SPEED_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_LINK_SPEED_PIN 5U    /*!<@brief 0U pin index: 5 */
-                                   /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_LINK_SPEED_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_LINK_SPEED_GPIO_PIN_MASK (1U << 5U) /*!<@brief GPIO pin mask */
+#define BOARD_LINK_SPEED_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_LINK_SPEED_PIN 5U                   /*!<@brief PORT pin number */
+#define BOARD_LINK_SPEED_PIN_MASK (1U << 5U)      /*!<@brief PORT pin mask */
+                                                  /* @} */
 
 /*! @name PIO0_6 (number 40), Test
   @{ */
-#define BOARD_TEST_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_TEST_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_TEST_PIN 6U    /*!<@brief 0U pin index: 6 */
-                             /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_TEST_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_TEST_GPIO_PIN_MASK (1U << 6U) /*!<@brief GPIO pin mask */
+#define BOARD_TEST_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_TEST_PIN 6U                   /*!<@brief PORT pin number */
+#define BOARD_TEST_PIN_MASK (1U << 6U)      /*!<@brief PORT pin mask */
+                                            /* @} */
 
 /*! @name PIO0_7 (number 41), C012 D0
   @{ */
-#define BOARD_C012_D0_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D0_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D0_PIN 7U    /*!<@brief 0U pin index: 7 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D0_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D0_GPIO_PIN_MASK (1U << 7U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D0_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D0_PIN 7U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D0_PIN_MASK (1U << 7U)      /*!<@brief PORT pin mask */
+                                               /* @} */
 
 /*! @name PIO0_8 (number 43), C012 D1
   @{ */
-#define BOARD_C012_D1_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D1_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D1_PIN 8U    /*!<@brief 0U pin index: 8 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D1_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D1_GPIO_PIN_MASK (1U << 8U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D1_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D1_PIN 8U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D1_PIN_MASK (1U << 8U)      /*!<@brief PORT pin mask */
+                                               /* @} */
 
 /*! @name PIO0_9 (number 44), C012 D2
   @{ */
-#define BOARD_C012_D2_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D2_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D2_PIN 9U    /*!<@brief 0U pin index: 9 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D2_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D2_GPIO_PIN_MASK (1U << 9U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D2_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D2_PIN 9U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D2_PIN_MASK (1U << 9U)      /*!<@brief PORT pin mask */
+                                               /* @} */
 
 /*! @name PIO0_10 (number 45), C012 D3
   @{ */
-#define BOARD_C012_D3_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D3_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D3_PIN 10U   /*!<@brief 0U pin index: 10 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D3_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D3_GPIO_PIN_MASK (1U << 10U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D3_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D3_PIN 10U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D3_PIN_MASK (1U << 10U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO0_11 (number 46), C012 D4
   @{ */
-#define BOARD_C012_D4_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D4_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D4_PIN 11U   /*!<@brief 0U pin index: 11 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D4_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D4_GPIO_PIN_MASK (1U << 11U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D4_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D4_PIN 11U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D4_PIN_MASK (1U << 11U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO0_12 (number 47), C012 D5
   @{ */
-#define BOARD_C012_D5_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D5_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D5_PIN 12U   /*!<@brief 0U pin index: 12 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D5_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D5_GPIO_PIN_MASK (1U << 12U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D5_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D5_PIN 12U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D5_PIN_MASK (1U << 12U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO0_13 (number 48), C012 D6
   @{ */
-#define BOARD_C012_D6_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D6_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D6_PIN 13U   /*!<@brief 0U pin index: 13 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D6_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D6_GPIO_PIN_MASK (1U << 13U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D6_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D6_PIN 13U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D6_PIN_MASK (1U << 13U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO0_14 (number 49), C012 D7
   @{ */
-#define BOARD_C012_D7_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_D7_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_D7_PIN 14U   /*!<@brief 0U pin index: 14 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_D7_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_D7_GPIO_PIN_MASK (1U << 14U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_D7_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_D7_PIN 14U                   /*!<@brief PORT pin number */
+#define BOARD_C012_D7_PIN_MASK (1U << 14U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO0_18 (number 58), C012 RS0
   @{ */
-#define BOARD_C012_RS0_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_RS0_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_RS0_PIN 18U   /*!<@brief 0U pin index: 18 */
-                                 /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_RS0_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_RS0_GPIO_PIN_MASK (1U << 18U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_RS0_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_RS0_PIN 18U                   /*!<@brief PORT pin number */
+#define BOARD_C012_RS0_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
+                                                 /* @} */
 
 /*! @name PIO0_19 (number 59), C012 RS1
   @{ */
-#define BOARD_C012_RS1_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_RS1_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_RS1_PIN 19U   /*!<@brief 0U pin index: 19 */
-                                 /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_RS1_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_RS1_GPIO_PIN_MASK (1U << 19U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_RS1_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_RS1_PIN 19U                   /*!<@brief PORT pin number */
+#define BOARD_C012_RS1_PIN_MASK (1U << 19U)      /*!<@brief PORT pin mask */
+                                                 /* @} */
 
 /*! @name PIO0_20 (number 60), C012 RnotW
   @{ */
-#define BOARD_C012_RNOTW_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_RNOTW_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_RNOTW_PIN 20U   /*!<@brief 0U pin index: 20 */
-                                   /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_RNOTW_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_RNOTW_GPIO_PIN_MASK (1U << 20U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_RNOTW_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_RNOTW_PIN 20U                   /*!<@brief PORT pin number */
+#define BOARD_C012_RNOTW_PIN_MASK (1U << 20U)      /*!<@brief PORT pin mask */
+                                                   /* @} */
 
 /*! @name PIO0_31 (number 13), Button
   @{ */
-#define BOARD_BUTTON_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_BUTTON_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_BUTTON_PIN 31U   /*!<@brief 0U pin index: 31 */
-                               /* @} */
 
-/*! @name CTIMER1_MAT0 (number 51), Speaker
+/* Symbols to be used with GPIO driver */
+#define BOARD_BUTTON_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_BUTTON_GPIO_PIN_MASK (1U << 31U) /*!<@brief GPIO pin mask */
+#define BOARD_BUTTON_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_BUTTON_PIN 31U                   /*!<@brief PORT pin number */
+#define BOARD_BUTTON_PIN_MASK (1U << 31U)      /*!<@brief PORT pin mask */
+                                               /* @} */
+
+/*! @name PIO1_12 (number 51), Speaker
   @{ */
-/* @} */
+#define BOARD_SPEAKER_PORT 1U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_SPEAKER_PIN 12U                   /*!<@brief PORT pin number */
+#define BOARD_SPEAKER_PIN_MASK (1U << 12U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO1_10 (number 30), Analyse
   @{ */
-#define BOARD_ANALYSE_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_ANALYSE_PORT 1U   /*!<@brief PORT device name: 1U */
-#define BOARD_ANALYSE_PIN 10U   /*!<@brief 1U pin index: 10 */
-                                /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_ANALYSE_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_ANALYSE_GPIO_PIN_MASK (1U << 10U) /*!<@brief GPIO pin mask */
+#define BOARD_ANALYSE_PORT 1U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_ANALYSE_PIN 10U                   /*!<@brief PORT pin number */
+#define BOARD_ANALYSE_PIN_MASK (1U << 10U)      /*!<@brief PORT pin mask */
+                                                /* @} */
 
 /*! @name PIO1_9 (number 29), Error
   @{ */
-#define BOARD_ERROR_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_ERROR_PORT 1U   /*!<@brief PORT device name: 1U */
-#define BOARD_ERROR_PIN 9U    /*!<@brief 1U pin index: 9 */
-                              /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_ERROR_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_ERROR_GPIO_PIN_MASK (1U << 9U) /*!<@brief GPIO pin mask */
+#define BOARD_ERROR_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_ERROR_PIN 9U                   /*!<@brief PORT pin number */
+#define BOARD_ERROR_PIN_MASK (1U << 9U)      /*!<@brief PORT pin mask */
+                                             /* @} */
 
 /*! @name PIO1_3 (number 17), LED
   @{ */
-#define BOARD_LED_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_LED_PORT 1U   /*!<@brief PORT device name: 1U */
-#define BOARD_LED_PIN 3U    /*!<@brief 1U pin index: 3 */
-                            /* @} */
 
-/*! @name FC0_RXD_SDA_MOSI (number 31), U18[4]/TO_MUX_P0_0-ISP_RX
-  @{ */
-/* @} */
+/* Symbols to be used with GPIO driver */
+#define BOARD_LED_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_LED_GPIO_PIN_MASK (1U << 3U) /*!<@brief GPIO pin mask */
+#define BOARD_LED_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_LED_PIN 3U                   /*!<@brief PORT pin number */
+#define BOARD_LED_PIN_MASK (1U << 3U)      /*!<@brief PORT pin mask */
+                                           /* @} */
 
-/*! @name FC0_TXD_SCL_MISO (number 32), U6[4]/U22[3]/P0_1-ISP_TX
+/*! @name PIO0_0 (number 31), U18[4]/TO_MUX_P0_0-ISP_RX
   @{ */
-/* @} */
+#define BOARD_DEBUG_UART_RX_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_DEBUG_UART_RX_PIN 0U                   /*!<@brief PORT pin number */
+#define BOARD_DEBUG_UART_RX_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
+                                                     /* @} */
+
+/*! @name PIO0_1 (number 32), U6[4]/U22[3]/P0_1-ISP_TX
+  @{ */
+#define BOARD_DEBUG_UART_TX_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_DEBUG_UART_TX_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_DEBUG_UART_TX_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+                                                     /* @} */
 
 /*! @name PIO0_22 (number 63), C012 notCS
   @{ */
-#define BOARD_C012_NOTCS_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_NOTCS_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_NOTCS_PIN 22U   /*!<@brief 0U pin index: 22 */
-                                   /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_NOTCS_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_NOTCS_GPIO_PIN_MASK (1U << 22U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_NOTCS_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_NOTCS_PIN 22U                   /*!<@brief PORT pin number */
+#define BOARD_C012_NOTCS_PIN_MASK (1U << 22U)      /*!<@brief PORT pin mask */
+                                                   /* @} */
 
 /*! @name PIO0_23 (number 1), C012 Output Int
   @{ */
-#define BOARD_C012_OUTPUT_INT_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_OUTPUT_INT_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_OUTPUT_INT_PIN 23U   /*!<@brief 0U pin index: 23 */
-                                        /* @} */
 
-/*! @name PIO0_24 (number 2), C012 Input Interrupt
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_OUTPUT_INT_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_OUTPUT_INT_GPIO_PIN_MASK (1U << 23U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_OUTPUT_INT_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_OUTPUT_INT_PIN 23U                   /*!<@brief PORT pin number */
+#define BOARD_C012_OUTPUT_INT_PIN_MASK (1U << 23U)      /*!<@brief PORT pin mask */
+                                                        /* @} */
+
+/*! @name PIO0_24 (number 2), C012 Input Int
   @{ */
-#define BOARD_C012_INPUT_INT_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_INPUT_INT_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_INPUT_INT_PIN 24U   /*!<@brief 0U pin index: 24 */
-                                       /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_INPUT_INT_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_INPUT_INT_GPIO_PIN_MASK (1U << 24U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_INPUT_INT_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_INPUT_INT_PIN 24U                   /*!<@brief PORT pin number */
+#define BOARD_C012_INPUT_INT_PIN_MASK (1U << 24U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
 
 /*! @name PIO0_25 (number 3), C012 Reset
   @{ */
-#define BOARD_C012_RESET_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_C012_RESET_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_C012_RESET_PIN 25U   /*!<@brief 0U pin index: 25 */
-                                   /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_C012_RESET_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_C012_RESET_GPIO_PIN_MASK (1U << 25U) /*!<@brief GPIO pin mask */
+#define BOARD_C012_RESET_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_C012_RESET_PIN 25U                   /*!<@brief PORT pin number */
+#define BOARD_C012_RESET_PIN_MASK (1U << 25U)      /*!<@brief PORT pin mask */
+                                                   /* @} */
 
 /*! @name PIO0_21 (number 61), Debug Pin
   @{ */
-#define BOARD_DEBUG_GPIO GPIO /*!<@brief GPIO device name: GPIO */
-#define BOARD_DEBUG_PORT 0U   /*!<@brief PORT device name: 0U */
-#define BOARD_DEBUG_PIN 21U   /*!<@brief 0U pin index: 21 */
-                              /* @} */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_DEBUG_GPIO GPIO                 /*!<@brief GPIO peripheral base pointer */
+#define BOARD_DEBUG_GPIO_PIN_MASK (1U << 21U) /*!<@brief GPIO pin mask */
+#define BOARD_DEBUG_PORT 0U                   /*!<@brief PORT peripheral base pointer */
+#define BOARD_DEBUG_PIN 21U                   /*!<@brief PORT pin number */
+#define BOARD_DEBUG_PIN_MASK (1U << 21U)      /*!<@brief PORT pin mask */
+                                              /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
@@ -689,13 +826,19 @@ void BOARD_InitPins(void); /* Function assigned for the Cortex-M4F */
 #define IOCON_PIO_OPENDRAIN_DI 0x00u  /*!<@brief Open drain is disabled */
 #define IOCON_PIO_SLEW_STANDARD 0x00u /*!<@brief Standard mode, output slew rate control is enabled */
 
-/*! @name FC0_RXD_SDA_MOSI (number 31), U18[4]/TO_MUX_P0_0-ISP_RX
+/*! @name PIO0_0 (number 31), U18[4]/TO_MUX_P0_0-ISP_RX
   @{ */
-/* @} */
+#define BOARD_INITPINS_CORE0_DEBUG_UART_RX_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_CORE0_DEBUG_UART_RX_PIN 0U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_CORE0_DEBUG_UART_RX_PIN_MASK (1U << 0U)      /*!<@brief PORT pin mask */
+                                                                    /* @} */
 
-/*! @name FC0_TXD_SCL_MISO (number 32), U6[4]/U22[3]/P0_1-ISP_TX
+/*! @name PIO0_1 (number 32), U6[4]/U22[3]/P0_1-ISP_TX
   @{ */
-/* @} */
+#define BOARD_INITPINS_CORE0_DEBUG_UART_TX_PORT 0U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_CORE0_DEBUG_UART_TX_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_CORE0_DEBUG_UART_TX_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+                                                                    /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

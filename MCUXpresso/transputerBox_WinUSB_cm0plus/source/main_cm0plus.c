@@ -20,20 +20,20 @@ typedef volatile struct
 {
 	fifo_t *rx_fifo;
 	fifo_t *tx_fifo;
-	bool power;
-	bool reset;
-} transputer_c012_t;
+} core_m0_data_t;
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static transputer_c012_t *c012;
+static core_m0_data_t *core_m0_data;
 
-static uint8_t rx_fifo_buffer[65536];
-static uint8_t tx_fifo_buffer[4096];
+#include <cr_section_macros.h>
 
-static fifo_t rx_fifo;
-static fifo_t tx_fifo;
+__NOINIT (RamX_32) static uint8_t rx_fifo_buffer[24576];
+__NOINIT (RamX_32) static uint8_t tx_fifo_buffer[6144];
+
+__NOINIT (RamX_32) static fifo_t rx_fifo;
+__NOINIT (RamX_32) static fifo_t tx_fifo;
 
 /*******************************************************************************
  * Prototypes
@@ -52,43 +52,13 @@ void SystemInitHook(void)
     MCMGR_EarlyInit();
 }
 
-__attribute__((optimize("O3")))
-static void handle_power_on(void)
+static void CoreDownEventHandler(uint16_t data, void *context)
 {
-	register GPIO_Type *gpio = GPIO;
+	// release all io ports
+	c012_power_off();
 
-	while (c012->power) {
-    	if (C012_OUTPUT_READY(gpio)) {
-       		if (FIFO_DEQ_READY(rx_fifo)) {
-        		register uint8_t byte;
-       			FIFO_DEQ_BYTE(rx_fifo, byte);
-       			C012_WRITE_DATA(gpio, byte);
-       		}
-    	}
-
-    	if (C012_INPUT_READY(gpio)) {
-    		if (FIFO_ENQ_READY(tx_fifo)) {
-        		register uint8_t byte;
-        		C012_READ_DATA(gpio, byte);
-        		FIFO_ENQ_BYTE(tx_fifo, byte);
-        	}
-    	}
-    }
-}
-
-static void handle_power_off(void)
-{
-    while (!c012->power) {
-    	if (c012->reset) {
-    		c012_reset();
-    		fifo_flush(&rx_fifo);
-    		fifo_flush(&tx_fifo);
-    		c012->reset = false;
-    		c012->power = true;
-    	} else {
-    		c012_power_off();
-    	}
-    }
+	// stop this core
+	MCMGR_StopCore(MCMGR_GetCurrentCore());
 }
 
 int main(void)
@@ -98,21 +68,28 @@ int main(void)
     /* Initialize MCMGR, install generic event handlers */
     MCMGR_Init();
 
+    /* install core down event handler */
+    MCMGR_RegisterEvent(kMCMGR_RemoteCoreDownEvent, CoreDownEventHandler, NULL);
+
     /* Get the startup data */
     do
     {
-        status = MCMGR_GetStartupData((uint32_t*)(&c012));
-    } while (status != kStatus_MCMGR_Success);
+        status = MCMGR_GetStartupData((uint32_t*)(&core_m0_data));
+    } while(status != kStatus_MCMGR_Success);
 
 	fifo_init(&rx_fifo, rx_fifo_buffer, sizeof(rx_fifo_buffer));
 	fifo_init(&tx_fifo, tx_fifo_buffer, sizeof(tx_fifo_buffer));
 
-	c012->rx_fifo = &rx_fifo;
-    c012->tx_fifo = &tx_fifo;
+	if (!core_m0_data->rx_fifo || !core_m0_data->tx_fifo) {
+		// tell the main core where the fifos are...
+		core_m0_data->rx_fifo = &rx_fifo;
+		core_m0_data->tx_fifo = &tx_fifo;
+		// ...and stop this core
+		MCMGR_StopCore(MCMGR_GetCurrentCore());
+	}
 
-    while (1)
-    {
-    	handle_power_on();
-    	handle_power_off();
-    }
+	c012_reset();
+	c012_run(&rx_fifo, &tx_fifo);
+
+	return 0;
 }

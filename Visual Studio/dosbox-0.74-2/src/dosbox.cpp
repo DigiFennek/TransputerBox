@@ -86,8 +86,9 @@ void TANDYSOUND_Init(Section*);
 void DISNEY_Init(Section*);
 void SERIAL_Init(Section*); 
 
-// Transputer
+#if C_TRANSPUTER
 void TRANSPUTER_Init(Section*);
+#endif
 
 #if C_IPX
 void IPX_Init(Section*);
@@ -749,17 +750,16 @@ void DOSBOX_Init(void) {
 	secprop->AddInitFunction(&DRIVES_Init);
 	secprop->AddInitFunction(&CDROM_Image_Init);
 
+#if C_TRANSPUTER
 	// Transputer
 	secprop->AddInitFunction(&TRANSPUTER_Init);
+#endif
 
 #if C_IPX
 	secprop=control->AddSection_prop("ipx",&IPX_Init,true);
 	Pbool = secprop->Add_bool("ipx",Property::Changeable::WhenIdle, false);
 	Pbool->Set_help("Enable ipx over UDP/IP emulation.");
 #endif
-//	secprop->AddInitFunction(&CREDITS_Init);
-
-
 
 	//TODO ?
 	secline=control->AddSection_line("autoexec",&AUTOEXEC_Init);

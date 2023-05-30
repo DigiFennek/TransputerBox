@@ -40,3 +40,9 @@ uint16_t ina260_read_voltage(void)
 	float u = read_register_int16(0x02);
 	return u * 1.25;
 }
+
+uint16_t ina260_read_wattage(void)
+{
+	float u = read_register_int16(0x03);
+	return u * 10.0;
+}
