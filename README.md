@@ -17,6 +17,9 @@ Hardware:
   - Backpanel with 7 slots, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/BB-7)
   - USB Interface with Power Management, Current Sensor and HP-Display, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/UB-1)
   - SIZE-1 TRAM with 128kB SRAM, Eagle Layout Editor: [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Eagle/TM-2)    
+  
+Misc
+  - Front Panels, www.schaeffer-ag.de "FRONTPLATTEN DESIGNER": [Link](https://github.com/DigiFennek/TransputerBox/tree/master/Schaeffer%20AG)
 
 ![Image](https://github.com/DigiFennek/TransputerBox/blob/master/Images/transputerbox_back.jpg)
 
